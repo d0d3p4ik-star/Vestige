@@ -1,0 +1,93 @@
+{
+ "started_utc": "2026-11-14T21:17:41+00:00",
+ "completed_utc": "2026-11-14T21:17:47+00:00",
+ "sources": {
+  "moon_catalog": "https://azmth.space/moon/missions",
+  "mars_catalog": "https://azmth.space/mars/missions",
+  "moon_json": "https://azmth.space/data/moon-missions.json",
+  "mars_json": "https://azmth.space/data/mars-missions.json",
+  "moon_data": "https://azmth.space/moon/data",
+  "mars_data": "https://azmth.space/mars/data"
+ },
+ "counts": {
+  "moon_catalog_pages_discovered": 78,
+  "mars_catalog_pages_discovered": 110,
+  "moon_pages_downloaded": 78,
+  "mars_pages_downloaded": 110,
+  "moon_json_count": 73,
+  "mars_json_entries_total": 123,
+  "mars_json_entries_not_in_mission_catalogue": [
+   "face-on-mars",
+   "getting-to-mars",
+   "life-on-mars",
+   "mapping-mars",
+   "mars-methane",
+   "mars-seasons-dust",
+   "mars-time",
+   "martian-meteorites",
+   "moxie",
+   "phobos-deimos",
+   "planetary-protection",
+   "talking-to-mars",
+   "water-on-mars"
+  ],
+  "moon_pages_not_in_json": [
+   "artemis-1",
+   "artemis-2",
+   "artemis-3",
+   "artemis-4",
+   "artemis-5"
+  ],
+  "images_referenced": 931,
+  "local_images_saved": 931,
+  "image_download_failures": 0,
+  "missions_without_any_image": [],
+  "images_with_credit": 928,
+  "images_without_credit": 3,
+  "images_with_stated_licence": 129,
+  "references_total": 2548,
+  "records_with_coordinates": 78,
+  "records_with_timeline": 185,
+  "source_errors": 0
+ },
+ "errors": [],
+ "dataset_license": "CC BY 4.0 (catalogue datasets): https://creativecommons.org/licenses/by/4.0/",
+ "learn_pages_listed_not_missions": {
+  "moon": [
+   "/moon/learn/far-side-of-the-moon",
+   "/moon/learn/getting-to-the-moon",
+   "/moon/learn/how-we-know-apollo-landed",
+   "/moon/learn/moon-rocks",
+   "/moon/learn/moon-time",
+   "/moon/learn/moonquakes",
+   "/moon/learn/origin-of-the-moon",
+   "/moon/learn/water-on-the-moon",
+   "/moon/learn/what-we-left-on-the-moon",
+   "/moon/learn/who-owns-the-moon",
+   "/moon/learn/why-we-see-one-face"
+  ],
+  "mars": [
+   "/mars/learn/face-on-mars",
+   "/mars/learn/getting-to-mars",
+   "/mars/learn/life-on-mars",
+   "/mars/learn/mapping-mars",
+   "/mars/learn/mars-methane",
+   "/mars/learn/mars-seasons-dust",
+   "/mars/learn/mars-time",
+   "/mars/learn/martian-meteorites",
+   "/mars/learn/moxie",
+   "/mars/learn/phobos-deimos",
+   "/mars/learn/planetary-protection",
+   "/mars/learn/talking-to-mars",
+   "/mars/learn/water-on-mars"
+  ]
+ },
+ "notes": [
+  "Page inventory comes from the HTML catalogues, not from the JSON files: Moon = /moon/missions/* plus the Artemis pages /moon/artemis-N; Mars = /mars/missions/*.",
+  "Mars JSON rows that are not in the mission catalogue are explainers/findings from /mars/learn and are not shown as missions.",
+  "Every image keeps the caption, credit and original link printed on its AZMTH page and is flagged VERIFY_BEFORE_PUBLICATION. 'stated_licence' only repeats what the credit line says; it is not a rights clearance. The dataset licence does not cover the photographs.",
+  "Local images are resized copies (WebP, longest side up to 1280 px); thumbnails are 520 px.",
+  "image_type is a keyword guess from the caption; when nothing matches it is 'image type unverified'.",
+  "Coordinates are copied from the page's 'Site' line with their note; 'precision' is 'approximate' when the note says so, otherwise 'as stated by source'."
+ ]
+}

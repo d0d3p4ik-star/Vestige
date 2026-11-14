@@ -1,27 +1,24 @@
 <!DOCTYPE html>
 <!--
-  ЗАБЫТАЯ ТЕХНИКА — одностраничный сайт о машинах, оставленных на Луне и Марсе.
+  VESTIGE — цифровой музей миссий на Луне и Марсе. Команда RealPugs, NASA Space Apps Challenge 2026.
 
-  ЧТО ПОЛОЖИТЬ РЯДОМ С ЭТИМ ФАЙЛОМ
-    models/moon_small.glb             — 3D-модель Луны
-    models/24881_Mars_1_6792_1.glb    — 3D-модель Марса
-    models/lunokhod.glb, models/opportunity.glb, models/flag.glb   — модели техники (по желанию; пока их нет, стоят заглушки)
-    images/lunokhod1.jpg, images/opportunity.jpg                   — фотографии для карточек (по желанию; пока их нет, показаны схемы)
-    textures/moon_color.jpg, textures/mars_color.jpg и т. д.       — карты поверхности, если моделей планет нет (по желанию)
-
-  ГДЕ МЕНЯТЬ ПУТИ
-    Все пути собраны в одном месте: блок «1. ПУТИ К ВАШИМ ФАЙЛАМ» в начале скрипта (ниже по файлу, объект ASSETS).
+  ЧТО ЛЕЖИТ РЯДОМ С ЭТИМ ФАЙЛОМ
+    models/    — 3D-модели (Git LFS): глобусы Луны и Марса и шесть аппаратов
+    data/      — архив: индекс записей и по одному JSON на страницу каталога (грузятся по одной)
+    images/    — фотографии архива с авторством и images/team (эмблема и фото команды)
+    tools/     — сборщик архива и генератор блока каталога в этом файле
 
   КАК ЗАПУСТИТЬ
     Через любой веб-сервер, например: python -m http.server — и открыть http://localhost:8000
-    При открытии двойным щелчком (file://) браузер не даст загрузить модели, и планеты будут нарисованы кодом.
+    При открытии двойным щелчком (file://) браузер не загрузит ни модели, ни записи архива.
 -->
 <html lang="ru">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Забытая техника — машины, которые остались на Луне и Марсе</title>
-<meta name="description" content="Интерактивная история о Луноходе-1, марсоходе Opportunity и другой технике, оставленной людьми на Луне и Марсе.">
+<title>VESTIGE — музей миссий на Луне и Марсе</title>
+<meta name="description" content="VESTIGE — цифровой музей человеческих миссий на Луне и Марсе от команды RealPugs: архив 188 записей, фотографии, 3D-модели и тесты для школьников.">
+<link rel="icon" href="images/team/realpugs-logo.jpg">
 <meta name="theme-color" content="#000000">
 
 <!-- Критические стили: работают ещё до загрузки Tailwind, чтобы не было белой вспышки -->
@@ -391,6 +388,60 @@
     .viewer-none { display: grid; place-items: center; aspect-ratio: auto; min-height: 10rem; padding: 1.5rem; text-align: center; color: var(--color-dim); border-style: dashed; }
     @media (max-width: 39.99rem) { .viewer { aspect-ratio: 1; } }
 
+
+    /* ---------- VESTIGE: бренд, архив с миниатюрами, галереи, тесты, команда ---------- */
+    .brand { display: inline-flex; align-items: center; gap: 0.5rem; letter-spacing: 0.14em; }
+    @media (max-width: 39.99rem) { .navlink-arch { display: none; } }   /* на телефоне архив — первым пунктом меню */
+    .brand img { width: 1.875rem; height: 1.875rem; border-radius: 50%; object-fit: cover; border: 1px solid var(--color-line); }
+    .arch-row { grid-template-columns: 4.75rem 1fr; align-items: start; }
+    .arch-thumb { grid-row: span 2; width: 4.75rem; height: 3.5rem; border-radius: 4px; object-fit: cover; background: #101114; border: 1px solid var(--color-line); }
+    .arch-thumb.none { display: grid; place-items: center; color: var(--color-dim); font-size: 0.6875rem; }
+    @media (min-width: 48rem) { .arch-row { grid-template-columns: 7rem 1fr auto; align-items: center; } .arch-thumb { grid-row: auto; width: 7rem; height: 4.75rem; } .arch-tags { grid-column: 3; } }
+    .arch-row:hover .arch-thumb { border-color: var(--accent); }
+    .cat-status { margin-top: 0.75rem; font-size: 1.0625rem; line-height: 1.5; max-width: 46rem; }
+    .hero-fig { margin-top: 1.25rem; }
+    .hero-fig .zoom { display: block; width: 100%; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-line); background: #000; }
+    .hero-fig img { display: block; width: 100%; max-height: min(27rem, 58vh); object-fit: contain; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr)); gap: 1rem; margin-top: 0.875rem; }
+    .gallery .zoom { display: block; width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--color-line); background: #000; }
+    .gallery img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform 0.25s; }
+    .zoom { cursor: zoom-in; } .zoom:hover, .zoom:focus-visible { border-color: var(--accent); }
+    .gallery .zoom:hover img { transform: scale(1.03); }
+    figcaption.cap { margin-top: 0.4375rem; font-size: 0.8125rem; line-height: 1.45; color: var(--color-dim); overflow-wrap: anywhere; }
+    figcaption.cap b { font-weight: 500; color: var(--color-ink); }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+    .stat { display: grid; gap: 0.25rem; padding: 0.875rem 1rem; border: 1px solid var(--color-line); border-radius: 6px; background: rgb(255 255 255 / 0.03); }
+    .stat b { font-family: var(--font-display); font-weight: 700; font-size: 1.625rem; line-height: 1.1; color: var(--accent); overflow-wrap: anywhere; }
+    .stat span { font-size: 0.875rem; line-height: 1.4; color: var(--color-dim); }
+    .fact-src { margin-left: 0.25rem; font-size: 0.75rem; color: var(--color-dim); white-space: nowrap; }
+    .fact-src:hover { color: var(--accent); }
+    .refs-plain { list-style: decimal; }
+    details.credits { margin-top: 1.25rem; }
+    details.credits summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; color: var(--accent); min-height: 2.75rem; display: flex; align-items: center; }
+    #lightbox { max-width: min(96vw, 80rem); max-height: 94vh; padding: 0.75rem; border: 1px solid var(--color-line); border-radius: 8px; background: #050506; color: var(--color-ink); }
+    #lightbox::backdrop { background: rgb(0 0 0 / 0.88); }
+    #lightbox img { display: block; max-width: 100%; max-height: 78vh; margin: 0 auto; object-fit: contain; }
+    #lightbox p { margin-top: 0.5rem; font-size: 0.8125rem; color: var(--color-dim); max-width: 60rem; }
+    #lightbox button { position: absolute; top: 0.5rem; right: 0.5rem; }
+    .mq { margin-top: 1.125rem; padding: 0; border: 0; }
+    .mq legend { font-weight: 500; max-width: 46rem; }
+    .mq-opts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.625rem; }
+    .mq-opts .btn { text-align: left; white-space: normal; max-width: 100%; }
+    .mq-opts .is-right { border-color: var(--color-ok); color: var(--color-ok); opacity: 1; }
+    .mq-opts .is-wrong { border-color: #FF8A7A; color: #FF8A7A; opacity: 1; }
+    .mq-res { margin-top: 0.375rem; font-size: 0.875rem; color: var(--color-dim); min-height: 1.25rem; }
+    .mq-score { margin-top: 1rem; font-family: var(--font-display); font-weight: 600; font-size: 1.125rem; color: var(--accent); }
+    .team { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.625rem; }
+    .team li { display: grid; gap: 0.125rem; padding: 0.75rem 0.875rem; border: 1px solid var(--color-line); border-radius: 6px; background: rgb(255 255 255 / 0.03); }
+    .team b { font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; }
+    .team span { font-size: 0.875rem; color: var(--color-dim); }
+    .team-photo img { display: block; width: 100%; max-width: 26rem; height: auto; border-radius: 8px; border: 1px solid var(--color-line); }
+    .impact-split { display: grid; gap: 1.5rem; margin-top: 1.25rem; }
+    @media (min-width: 52rem) { .impact-split { grid-template-columns: minmax(0, 22rem) 1fr; align-items: start; } }
+    .about-head { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; }
+    .about-head img { width: 5.5rem; height: 5.5rem; border-radius: 50%; object-fit: cover; border: 1px solid var(--color-line); }
+    .motto { margin: 2.5rem 0 0; padding: 1.25rem 0 0; border-top: 1px solid var(--color-line); font-family: var(--font-display); font-weight: 600; font-size: clamp(1.25rem, 3.4vw, 1.875rem); line-height: 1.2; max-width: 46rem; color: var(--accent); }
+
     /* ---------- Заставка: двери лаборатории RealPugs ---------- */
     #lab { position: fixed; inset: 0; z-index: 60; overflow-y: auto; overscroll-behavior: contain; color: var(--color-ink); --accent: var(--color-moon);
       background: radial-gradient(ellipse 80% 60% at 50% 35%, #0C141C 0%, #000 72%); }
@@ -398,15 +449,14 @@
     .lab-room { min-height: 100%; display: grid; place-items: center; padding: 4.25rem 1.125rem 2rem; }
     .lab-main { width: 100%; max-width: 66rem; text-align: center; opacity: 0; transform: translateY(10px); transition: opacity 0.6s 0.45s, transform 0.6s 0.45s; }
     #lab.open .lab-main { opacity: 1; transform: none; }
-    #lab-title { font-weight: 700; font-size: clamp(1.625rem, 4.2vw, 2.75rem); line-height: 1.05; letter-spacing: 0.01em; }
+    #lab-title { font-weight: 800; font-size: clamp(2.25rem, 7vw, 4.25rem); line-height: 1; letter-spacing: 0.2em; margin-right: -0.2em; }
     #lab-sub { margin: 0.625rem auto 0; max-width: 40rem; color: var(--color-dim); font-size: 1rem; line-height: 1.5; }
     .lab-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin-top: 1.75rem; text-align: left; }
-    .lab-window { display: none; }
     @media (min-width: 52rem) {
-      .lab-grid { grid-template-columns: 1fr 1.5fr 1fr; grid-template-rows: repeat(3, auto); gap: 0.875rem; }
+      .lab-grid { grid-template-columns: 1fr 1.7fr 1fr; grid-template-rows: repeat(3, auto); gap: 0.875rem; }
       .lab-grid > :nth-child(1) { grid-area: 1 / 1; } .lab-grid > :nth-child(2) { grid-area: 2 / 1; } .lab-grid > :nth-child(3) { grid-area: 3 / 1; }
       .lab-grid > :nth-child(5) { grid-area: 1 / 3; } .lab-grid > :nth-child(6) { grid-area: 2 / 3; } .lab-grid > :nth-child(7) { grid-area: 3 / 3; }
-      .lab-window { display: block; grid-area: 1 / 2 / 4 / 3; }
+      .lab-grid > .lab-window { grid-area: 1 / 2 / 4 / 3; order: 0; }
     }
     .mon { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.625rem 0.625rem 0.75rem; border: 1px solid var(--color-line); border-radius: 6px; background: rgb(255 255 255 / 0.03); color: var(--color-ink); transition: border-color 0.15s, background-color 0.15s; }
     .mon:hover, .mon:focus-visible { border-color: var(--accent); background: rgb(255 255 255 / 0.06); }
@@ -416,24 +466,41 @@
     .mon:hover .mon-scr, .mon:focus-visible .mon-scr { box-shadow: inset 0 0 22px color-mix(in srgb, var(--accent) 30%, transparent); }
     .mon-scr svg { width: 46%; max-height: 80%; fill: none; stroke: var(--accent); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
     .mon-scr text { fill: var(--accent); stroke: none; font-family: var(--font-display); font-size: 7.5px; font-weight: 600; }
-    .lab-window { position: relative; min-height: 17rem; border: 1px solid var(--color-line); border-radius: 8px; overflow: hidden; background: radial-gradient(ellipse at 50% 45%, #060A0E, #000 80%); }
-    .lab-window::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 3px); pointer-events: none; z-index: 1; }
-    .lab-window i { position: absolute; top: 46%; aspect-ratio: 1; border-radius: 50%; transform: translateY(-50%); }
-    .lab-window .lw-mars { right: 9%; width: 46%; background: radial-gradient(circle at 34% 30%, #F0B488, #B5582E 55%, #3A1A0E 100%); }
-    .lab-window .lw-moon { left: 11%; width: calc(46% * 0.512); background: radial-gradient(circle at 34% 30%, #D7D5CF, #8D8B85 55%, #2A2A29 100%); }
-    .lab-window span { position: absolute; left: 0; right: 0; bottom: 0.75rem; z-index: 2; text-align: center; font-size: 0.8125rem; color: var(--color-dim); }
+    .lab-window { position: relative; grid-column: 1 / -1; order: -1; min-height: 15rem; display: grid; align-content: center; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--color-line)); border-radius: 10px; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #0A1017, #000 78%); box-shadow: 0 0 0 1px #000, 0 0 46px color-mix(in srgb, var(--accent) 16%, transparent), inset 0 0 60px rgb(0 0 0 / 0.7); }
+    .lab-window::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgb(255 255 255 / 0.028) 0 1px, transparent 1px 3px); pointer-events: none; z-index: 3; }
+    #lab-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+    .lab-planets { position: relative; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; align-items: end; gap: 0.5rem; padding: 2.25rem 0.75rem 1rem; }
+    .lab-planet { display: grid; justify-items: center; gap: 0.375rem; padding: 0.5rem 0.25rem 0.75rem; border: 1px solid transparent; border-radius: 8px; color: var(--color-ink); text-align: center; transition: border-color 0.15s, background-color 0.15s; }
+    .lab-planet:hover, .lab-planet:focus-visible { border-color: var(--accent); background: rgb(255 255 255 / 0.05); }
+    .lab-planet[data-lab-planet="mars"] { --accent: var(--color-mars); }
+    .lab-planet i { display: block; aspect-ratio: 1; border-radius: 50%; transition: transform 0.25s; }
+    .lab-planet:hover i, .lab-planet:focus-visible i { transform: scale(1.05); }
+    .lab-planet .lw-mars { width: min(82%, 14rem); background: radial-gradient(circle at 34% 30%, #F0B488, #B5582E 55%, #3A1A0E 100%); }
+    .lab-planet .lw-moon { width: min(82%, 14rem); background: radial-gradient(circle at 34% 30%, #D7D5CF, #8D8B85 55%, #2A2A29 100%); }
+    .lab-window.gl .lab-planet i { background: none; }
+    .lab-planet b { margin-top: 0.375rem; font-family: var(--font-display); font-weight: 700; font-size: clamp(1.0625rem, 2.6vw, 1.375rem); line-height: 1.1; color: var(--accent); }
+    .lab-planet span { font-size: 0.8125rem; color: var(--color-dim); }
+    #lab-live { position: absolute; left: 0; right: 0; top: 0.625rem; z-index: 2; text-align: center; font-family: var(--font-display); font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-dim); }
+    .lab-brand { display: inline-flex; align-items: center; gap: 0.625rem; margin-bottom: 0.625rem; font-family: var(--font-display); font-weight: 600; letter-spacing: 0.08em; color: var(--color-dim); }
+    .lab-brand img { width: 2.75rem; height: 2.75rem; border-radius: 50%; object-fit: cover; border: 1px solid var(--color-line); }
     .lab-langs { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 1rem; }
     .lab-hint { margin-top: 1.25rem; color: var(--color-dim); font-size: 0.875rem; }
     .lab-enter { margin-top: 0.875rem; min-height: 3.25rem; padding: 0.625rem 1.75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.0625rem; }
     .lab-motto { margin: 1.25rem auto 0; max-width: 36rem; font-size: 0.875rem; color: var(--color-dim); font-style: italic; }
     .lab-door { position: absolute; top: 0; bottom: 0; width: 50.2%; z-index: 2; transition: transform 1.15s cubic-bezier(0.7, 0, 0.2, 1);
-      background: repeating-linear-gradient(90deg, transparent 0 46px, rgb(255 255 255 / 0.04) 46px 47px), linear-gradient(#111418, #07090B); }
+      background:
+        linear-gradient(90deg, transparent calc(100% - 3.25rem), rgb(0 0 0 / 0.35) calc(100% - 3.25rem) calc(100% - 3.125rem), transparent calc(100% - 3.125rem)),
+        repeating-linear-gradient(0deg, transparent 0 7.5rem, rgb(0 0 0 / 0.5) 7.5rem calc(7.5rem + 2px), rgb(255 255 255 / 0.05) calc(7.5rem + 2px) calc(7.5rem + 3px)),
+        linear-gradient(180deg, #1B1E23, #0E1013 55%, #15181C); }
+    .lab-door::after { content: ""; position: absolute; top: 0; bottom: 0; width: 0.5rem; background: repeating-linear-gradient(-45deg, #D9A441 0 0.5rem, #111 0.5rem 1rem); opacity: 0.55; }
+    .lab-door.l::after { right: 0; } .lab-door.r::after { left: 0; }
     .lab-door.l { left: 0; border-right: 1px solid rgb(236 234 228 / 0.25); }
     .lab-door.r { right: 0; border-left: 1px solid rgb(236 234 228 / 0.25); }
     #lab.open .lab-door.l { transform: translateX(-101%); }
     #lab.open .lab-door.r { transform: translateX(101%); }
-    .lab-emblem { position: absolute; left: 50%; top: 44%; z-index: 3; display: grid; justify-items: center; gap: 0.625rem; width: 9.5rem; transform: translate(-50%, -50%); transition: opacity 0.4s, transform 0.4s; }
-    .lab-emblem svg { width: 100%; fill: none; stroke: var(--color-ink); stroke-width: 1.5; }
+    .lab-emblem { position: absolute; left: 50%; top: 44%; z-index: 3; display: grid; justify-items: center; gap: 0.75rem; width: 11rem; transform: translate(-50%, -50%); transition: opacity 0.4s, transform 0.4s; }
+    .lab-emblem img { width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-ink); box-shadow: 0 0 0 6px #0B0D10, 0 0 0 7px rgb(236 234 228 / 0.3), 0 0 44px color-mix(in srgb, var(--accent) 45%, transparent); }
+    .lab-emblem small { font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-dim); }
     .lab-emblem .f { fill: var(--accent); stroke: none; }
     .lab-emblem text { fill: var(--color-ink); stroke: none; font-family: var(--font-display); font-weight: 700; font-size: 26px; }
     .lab-emblem span { font-family: var(--font-display); font-weight: 600; font-size: 1.125rem; letter-spacing: 0.06em; }
@@ -441,7 +508,7 @@
     .lab-scanline { position: absolute; left: 0; right: 0; top: 0; z-index: 3; height: 2px; background: var(--accent); box-shadow: 0 0 18px 4px color-mix(in srgb, var(--accent) 55%, transparent); opacity: 0; }
     #lab.scan:not(.open) .lab-scanline { animation: labscan 1.6s ease-in-out forwards; }
     @keyframes labscan { 0% { top: 8%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 92%; opacity: 0; } }
-    .lab-scan { position: absolute; left: 0; right: 0; top: calc(44% + 7.5rem); z-index: 3; text-align: center; font-family: var(--font-display); font-weight: 600; font-size: 0.9375rem; letter-spacing: 0.04em; color: var(--color-dim); transition: opacity 0.3s; }
+    .lab-scan { position: absolute; left: 0; right: 0; top: calc(44% + 10.25rem); z-index: 3; text-align: center; font-family: var(--font-display); font-weight: 600; font-size: 0.9375rem; letter-spacing: 0.04em; color: var(--color-dim); transition: opacity 0.3s; }
     #lab.granted .lab-scan { color: var(--color-ok); }
     #lab.open .lab-scan { opacity: 0; }
     .lab-top { position: absolute; top: 0.75rem; right: 0.75rem; z-index: 4; }
@@ -472,12 +539,13 @@
 <!-- ======================= ВЕРХНЯЯ ПАНЕЛЬ ======================= -->
 <header class="fixed inset-x-0 top-0 z-30">
   <div class="flex h-14 items-center gap-1 bg-black/70 px-2 backdrop-blur-md sm:gap-2 sm:px-6">
-    <a href="#intro" class="mr-4 hidden font-display text-[1.0625rem] font-bold tracking-wide text-ink no-underline md:block" data-i18n="brand">Забытая техника</a>
+    <a href="#intro" class="brand mr-3 font-display text-[1.0625rem] font-bold text-ink no-underline"><img src="images/team/realpugs-logo.jpg" alt="RealPugs" width="30" height="30"><span class="hidden md:inline">VESTIGE</span></a>
     <nav aria-label="Разделы" data-i18n-attr="aria-label:nav.label" class="flex items-center">
       <a class="navlink" href="#intro" data-nav="0" data-i18n="nav.intro" aria-current="true">Старт</a>
       <a class="navlink" href="#moon" data-nav="1" data-i18n="nav.moon">Луна</a>
       <a class="navlink" href="#mars" data-nav="2" data-i18n="nav.mars">Марс</a>
       <a class="navlink" href="#finale" data-nav="3" data-i18n="nav.finale">Итоги</a>
+      <a class="navlink navlink-arch" href="#/missions" data-i18n="nav.archive">Архив</a>
     </nav>
     <div class="ml-auto flex items-center gap-1 sm:gap-2">
       <div class="seg seg-head" role="group" aria-label="Язык" data-i18n-attr="aria-label:lang.label">
@@ -508,7 +576,7 @@
   <!-- ======================= СЕКЦИЯ 1. ИНТРО ======================= -->
   <section id="intro" data-scene="0" class="relative flex min-h-[100svh] flex-col justify-end px-5 pb-10 pt-24 sm:px-10 sm:pb-14 lg:px-16">
     <div class="pointer-events-auto max-w-[46rem]">
-      <h1 class="font-display text-[clamp(2.9rem,9vw,7.25rem)] font-extrabold leading-[0.92] tracking-[-0.01em]" data-i18n="intro.title">Забытая техника</h1>
+      <h1 class="font-display text-[clamp(2.9rem,9vw,7.25rem)] font-extrabold leading-[0.92] tracking-[-0.01em]" data-i18n="intro.title">VESTIGE</h1>
       <p class="mt-5 max-w-[36rem] text-[1.1875rem] leading-[1.5] sm:text-[1.3125rem]" data-i18n="intro.lede">На Луне и Марсе стоят машины, которые давно замолчали. Некоторые из них до сих пор помогают учёным. Листайте вниз — они сами расскажут о себе.</p>
       <p class="mt-4 max-w-[36rem] text-[0.875rem] leading-[1.5] text-dim" data-i18n="intro.meta">Две главы, 16 точек на карте и викторина — примерно на 10 минут. Луна и Марс показаны в одном масштабе: Марс почти вдвое шире.</p>
     </div>
@@ -889,6 +957,9 @@
       </article>
 
       <!-- О проекте и источники -->
+      <!-- Beyond the screen: текст рисует renderImpactCard() на текущем языке -->
+      <article class="plate p-5 sm:p-8" id="impact-card"></article>
+
       <article class="plate p-5 sm:p-8">
         <h3 class="pr-3 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="f4.title">Об этом проекте</h3>
         <dl class="mt-5 grid gap-x-10 gap-y-5 text-[0.9688rem] leading-[1.55] md:grid-cols-2">
@@ -959,15 +1030,23 @@
 <div id="lab" role="dialog" aria-modal="true" aria-labelledby="lab-title">
   <div class="lab-room">
     <div class="lab-main">
-      <h2 id="lab-title" class="font-display">RealPugs Research Laboratory</h2>
+      <p class="lab-brand"><img src="images/team/realpugs-logo.jpg" alt="" width="44" height="44"><span>REALPUGS</span></p>
+      <h2 id="lab-title" class="font-display">VESTIGE</h2>
       <p id="lab-sub"></p>
       <div class="lab-grid">
         <button type="button" class="mon" data-mon="about"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><circle cx="14" cy="11" r="4.5"/><circle cx="27" cy="11" r="4.5"/><path d="M6 25c1.5-5 5-7 8-7s6.5 2 8 7M19 25c1.5-5 5-7 8-7s6.5 2 8 7"/></svg></span><b>About us</b></button>
+        <button type="button" class="mon" data-mon="impact"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><path d="M6 8h11c2 0 3 1 3 3v12c0-2-1-3-3-3H6zM34 8H23c-2 0-3 1-3 3v12c0-2 1-3 3-3h11z"/></svg></span><b>Our impact</b></button>
         <button type="button" class="mon" data-mon="challenge"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><circle cx="20" cy="14" r="8"/><ellipse cx="20" cy="14" rx="16" ry="5" transform="rotate(-18 20 14)"/></svg></span><b>NASA Space Apps Challenge</b></button>
+        <div class="lab-window">
+          <canvas id="lab-canvas" aria-hidden="true"></canvas>
+          <span id="lab-live"></span>
+          <div class="lab-planets">
+            <button type="button" class="lab-planet" data-lab-planet="moon"><i class="lw-moon" aria-hidden="true"></i><b></b><span></span></button>
+            <button type="button" class="lab-planet" data-lab-planet="mars"><i class="lw-mars" aria-hidden="true"></i><b></b><span></span></button>
+          </div>
+        </div>
         <button type="button" class="mon" data-mon="language"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><text x="20" y="18" text-anchor="middle">EN · RU · KZ</text></svg></span><b>Language</b></button>
-        <div class="lab-window" aria-hidden="true"><i class="lw-moon"></i><i class="lw-mars"></i><span id="lab-live"></span></div>
         <button type="button" class="mon" data-mon="references"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><path d="M9 5h14l6 6v13H9zM23 5v6h6M13 15h12M13 19h12"/></svg></span><b>References</b></button>
-        <button type="button" class="mon" data-mon="openSource"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><path d="M15 8l-7 6 7 6M25 8l7 6-7 6M22 6l-4 16"/></svg></span><b>Open source</b></button>
         <button type="button" class="mon" data-mon="ai"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><rect x="12" y="6" width="16" height="16" rx="2"/><path d="M16 2v4M24 2v4M16 22v4M24 22v4M8 10h4M8 18h4M28 10h4M28 18h4"/></svg></span><b>AI &amp; SI disclosure</b></button>
       </div>
       <div class="lab-langs" hidden>
@@ -976,18 +1055,20 @@
         <button type="button" class="btn" data-lab-lang="kk" lang="kk">Қазақша</button>
       </div>
       <p id="lab-hint" class="lab-hint"></p>
-      <button type="button" class="btn btn-solid lab-enter" id="lab-enter">Enter the archive</button>
+      <button type="button" class="btn btn-solid lab-enter" id="lab-enter">Start the story tour</button>
       <p id="lab-motto" class="lab-motto"></p>
     </div>
   </div>
   <div class="lab-door l" aria-hidden="true"></div>
   <div class="lab-door r" aria-hidden="true"></div>
-  <!-- Эмблема-заглушка: замените на эмблему команды RealPugs -->
-  <div class="lab-emblem" aria-hidden="true"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="54"/><circle cx="60" cy="60" r="44"/><ellipse cx="60" cy="60" rx="56" ry="18" transform="rotate(-20 60 60)"/><circle cx="34" cy="52" r="6" class="f"/><circle cx="88" cy="68" r="9" class="f"/><text x="60" y="66" text-anchor="middle">RP</text></svg><span>RealPugs</span></div>
+  <div class="lab-emblem" aria-hidden="true"><img src="images/team/realpugs-logo.jpg" alt="" width="176" height="176"><span>RealPugs</span><small>Research laboratory</small></div>
   <div class="lab-scanline" aria-hidden="true"></div>
   <p class="lab-scan" id="lab-scan" aria-live="polite"></p>
   <p class="lab-top"><button type="button" class="btn btn-sm" id="lab-skip">Skip intro</button></p>
 </div>
+
+<!-- Просмотр фотографии крупно -->
+<dialog id="lightbox"><button type="button" class="iconbtn" aria-label="Close"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button><img src="" alt=""><p></p></dialog>
 
 <!-- Подсказка и индикатор загрузки моделей -->
 <p id="hint" class="pointer-events-none fixed left-0 top-0 z-[6] max-w-[calc(100vw-1rem)] rounded-[3px] text-center sm:whitespace-nowrap border border-line bg-black/70 px-3 py-1.5 text-[0.8125rem] text-dim opacity-0 transition-opacity duration-500" aria-hidden="true"></p>
@@ -2166,202 +2247,202 @@ REF_LIST.push(
    Марс: 110 записей каталога azmth.space/mars/missions (в JSON их 123: ещё 13 — справочные
    темы из раздела /mars/learn, они вынесены в библиотеку исследований).
    ===================================================================================== */
-// [slug, название, оператор, страна, тип, статус, год, достигла поверхности (1/0), путь страницы]
+// GENERATED by tools/sync_index.py from data/mission-index.json — do not edit by hand.
+// Moon: [slug, name, operator, nation, type, outcome, year, reached surface (1/0), page path, thumbnail, images, nation, [lat, lon, approximate], facts checked]
 const ARCHIVE_MOON = [
-  ['pioneer-lunar-program', 'Pioneer Lunar Program (1958–1959)', 'USA (ARPA/USAF, NASA, Army-JPL)', 'United States', 'program', 'partial', 1958, 0],
-  ['luna-1', 'Luna 1', 'USSR (OKB-1)', 'Soviet Union', 'flyby', 'partial', 1959, 0],
-  ['luna-2', 'Luna 2', 'USSR (OKB-1)', 'Soviet Union', 'impactor', 'success', 1959, 1],
-  ['luna-3', 'Luna 3', 'USSR (OKB-1)', 'Soviet Union', 'flyby', 'success', 1959, 0],
-  ['ranger-program', 'Ranger Program', 'NASA / JPL (US)', 'United States', 'program', 'success', 1961, 1],
-  ['soviet-crewed-lunar-program', 'Soviet Crewed Lunar Program', 'USSR', 'Soviet Union', 'program', 'cancelled', 1964, 0],
-  ['luna-soft-landing-failures', 'Luna soft-landing failures (E-6, 1963 to 1965)', 'USSR', 'Soviet Union', 'soft-lander', 'failure', 1965, 1],
-  ['luna-10', 'Luna 10', 'USSR', 'Soviet Union', 'orbiter', 'success', 1966, 0],
-  ['luna-9', 'Luna 9', 'USSR', 'Soviet Union', 'soft-lander', 'success', 1966, 1],
-  ['lunar-orbiter-program', 'Lunar Orbiter Program', 'NASA (US)', 'United States', 'orbiter', 'success', 1966, 1],
-  ['surveyor-1', 'Surveyor 1', 'NASA (US)', 'United States', 'soft-lander', 'success', 1966, 1],
-  ['surveyor-2-7', 'Surveyor 2 to 7', 'NASA / JPL (US)', 'United States', 'soft-lander', 'partial', 1966, 1],
-  ['apollo-8', 'Apollo 8', 'NASA (US)', 'United States', 'crewed-orbiter', 'success', 1968, 0],
-  ['zond-5', 'Zond 5', 'USSR', 'Soviet Union', 'flyby', 'success', 1968, 0],
-  ['apollo-10', 'Apollo 10', 'NASA (US)', 'United States', 'crewed-orbiter', 'success', 1969, 0],
-  ['apollo-11', 'Apollo 11', 'NASA (US)', 'United States', 'crewed-landing', 'success', 1969, 1],
-  ['apollo-12', 'Apollo 12', 'NASA (US)', 'United States', 'crewed-landing', 'success', 1969, 1],
-  ['luna-15', 'Luna 15', 'USSR', 'Soviet Union', 'sample-return', 'failure', 1969, 1],
-  ['apollo-13', 'Apollo 13', 'NASA (US)', 'United States', 'crewed-flyby', 'partial', 1970, 1],
-  ['luna-16', 'Luna 16', 'USSR', 'Soviet Union', 'sample-return', 'success', 1970, 1],
-  ['luna-17-lunokhod-1', 'Luna 17 / Lunokhod 1', 'USSR', 'Soviet Union', 'rover', 'success', 1970, 1],
-  ['apollo-14', 'Apollo 14', 'NASA (US)', 'United States', 'crewed-landing', 'success', 1971, 1],
-  ['apollo-15', 'Apollo 15', 'NASA (US)', 'United States', 'crewed-landing', 'success', 1971, 1],
-  ['luna-18-23', 'Luna 18 and Luna 23', 'USSR', 'Soviet Union', 'sample-return', 'failure', 1971, 1],
-  ['apollo-16', 'Apollo 16', 'NASA (US)', 'United States', 'crewed-landing', 'success', 1972, 1],
-  ['apollo-17', 'Apollo 17', 'NASA (US)', 'United States', 'crewed-landing', 'success', 1972, 1],
-  ['luna-20', 'Luna 20', 'USSR', 'Soviet Union', 'sample-return', 'success', 1972, 1],
-  ['luna-21-lunokhod-2', 'Luna 21 / Lunokhod 2', 'USSR', 'Soviet Union', 'rover', 'success', 1973, 1],
-  ['luna-24', 'Luna 24', 'USSR', 'Soviet Union', 'sample-return', 'success', 1976, 1],
-  ['hiten', 'Hiten (MUSES-A)', 'ISAS (Japan)', 'Japan', 'orbiter', 'success', 1990, 1],
-  ['clementine', 'Clementine', 'BMDO/NASA (US)', 'United States', 'orbiter', 'partial', 1994, 0],
-  ['lunar-prospector', 'Lunar Prospector', 'NASA (US)', 'United States', 'orbiter', 'success', 1998, 1],
-  ['smart-1', 'SMART-1', 'ESA (Europe)', 'Europe (ESA)', 'orbiter', 'success', 2003, 1],
-  ['change-1', 'Chang’e 1', 'CNSA (China)', 'China', 'orbiter', 'success', 2007, 1],
-  ['kaguya', 'Kaguya (SELENE)', 'JAXA (Japan)', 'Japan', 'orbiter', 'success', 2007, 1],
-  ['chandrayaan-1', 'Chandrayaan-1', 'ISRO (India)', 'India', 'orbiter', 'success', 2008, 1],
-  ['lcross', 'LCROSS', 'NASA (US)', 'United States', 'impactor', 'success', 2009, 1],
-  ['lunar-reconnaissance-orbiter', 'Lunar Reconnaissance Orbiter (LRO)', 'NASA (US)', 'United States', 'orbiter', 'operating', 2009, 0],
-  ['change-2', 'Chang’e 2', 'CNSA (China)', 'China', 'orbiter', 'success', 2010, 0],
-  ['artemis-p1-p2', 'ARTEMIS P1 and P2', 'NASA (US)', 'United States', 'orbiter', 'operating', 2011, 0],
-  ['grail', 'GRAIL (Ebb and Flow)', 'NASA (US)', 'United States', 'orbiter', 'success', 2011, 1],
-  ['change-3', 'Chang’e 3 and Yutu', 'CNSA (China)', 'China', 'rover', 'success', 2013, 1],
-  ['ladee', 'LADEE', 'NASA (US)', 'United States', 'orbiter', 'success', 2013, 1],
-  ['change-5-t1', 'Chang’e 5-T1 (Xiaofei)', 'CNSA (China)', 'China', 'flyby', 'success', 2014, 0],
-  ['lunar-gateway', 'Lunar Gateway', 'NASA-led with ESA, JAXA, CSA, MBRSC (UAE)', 'Multinational', 'program', 'in-development', 2017, 0],
-  ['queqiao-1-longjiang', 'Queqiao-1 and the Longjiang microsatellites', 'CNSA / Harbin Institute of Technology (China)', 'China', 'relay', 'partial', 2018, 1],
-  ['beresheet', 'Beresheet', 'SpaceIL / Israel Aerospace Industries (Israel)', 'Israel', 'soft-lander', 'failure', 2019, 1],
-  ['chandrayaan-2', 'Chandrayaan-2', 'ISRO (India)', 'India', 'orbiter', 'partial', 2019, 1],
-  ['change-4', 'Chang’e 4 (Yutu-2 rover and Queqiao-1 relay)', 'CNSA (China)', 'China', 'rover', 'operating', 2019, 1],
-  ['beresheet-2', 'Beresheet 2', 'SpaceIL / Israel Aerospace Industries (Israel)', 'Israel', 'soft-lander', 'in-development', 2020, 0],
-  ['change-5', 'Chang’e 5', 'CNSA (China)', 'China', 'sample-return', 'success', 2020, 1],
-  ['ilrs', 'International Lunar Research Station (ILRS)', 'CNSA (China) + Roscosmos (Russia), with ILRSCO partners', 'Multinational', 'program', 'in-development', 2021, 0],
-  ['artemis-1-cubesats', 'Artemis I CubeSats', 'Ten secondary payloads (NASA, JAXA, ASI/Argotec, universities and companies)', 'Multinational', 'flyby', 'partial', 2022, 0],
-  ['capstone', 'CAPSTONE', 'Advanced Space for NASA (US, commercial)', 'United States', 'orbiter', 'success', 2022, 0],
-  ['danuri', 'Danuri (Korea Pathfinder Lunar Orbiter)', 'KARI (South Korea)', 'South Korea', 'orbiter', 'operating', 2022, 0],
-  ['we0913a-rocket-body-2022', 'WE0913A (2022 rocket body)', 'Unattributed (evidence points to China)', 'China', 'debris', 'debris', 2022, 1],
-  ['chandrayaan-3', 'Chandrayaan-3', 'ISRO (India)', 'India', 'rover', 'success', 2023, 1],
-  ['china-crewed-lunar-program', 'China’s Crewed Lunar Program', 'CMSA (China)', 'China', 'program', 'in-development', 2023, 0],
-  ['ispace-hakuto-r', 'ispace Hakuto-R Missions 1 and 2', 'ispace (Japan, commercial)', 'Japan', 'soft-lander', 'failure', 2023, 1],
-  ['luna-25', 'Luna 25', 'Roscosmos (Russia)', 'Russia', 'soft-lander', 'failure', 2023, 1],
-  ['change-6', 'Chang’e 6 and Queqiao-2', 'CNSA (China)', 'China', 'sample-return', 'success', 2024, 1],
-  ['im-1-odysseus', 'IM-1 Odysseus', 'Intuitive Machines (US, commercial, flying NASA CLPS payloads)', 'United States', 'soft-lander', 'partial', 2024, 1],
-  ['peregrine-mission-one', 'Peregrine Mission One', 'Astrobotic (US, commercial, flying NASA CLPS payloads)', 'United States', 'soft-lander', 'failure', 2024, 0],
-  ['slim', 'SLIM (Smart Lander for Investigating Moon)', 'JAXA (Japan)', 'Japan', 'soft-lander', 'success', 2024, 1],
-  ['blue-ghost-1', 'Firefly Blue Ghost Mission 1', 'Firefly Aerospace (US, commercial)', 'United States', 'soft-lander', 'success', 2025, 1],
-  ['im-2-athena', 'Intuitive Machines IM-2 (Athena)', 'Intuitive Machines (US, commercial)', 'United States', 'soft-lander', 'partial', 2025, 1],
-  ['falcon-9-upper-stage-2026', 'Falcon 9 upper stage (2025-010D)', 'SpaceX (US)', 'United States', 'debris', 'debris', 2026, 1],
-  ['griffin-mission-one', 'Griffin Mission One', 'Astrobotic (US, commercial; renamed Voyager Lunar Systems in 2026)', 'United States', 'soft-lander', 'in-development', 2026, 0],
-  ['blue-moon-mk1', 'Blue Moon Mark 1', 'Blue Origin (US, commercial)', 'United States', 'program', 'in-development', 2027, 0],
-  ['change-7', 'Chang’e 7', 'CNSA (China)', 'China', 'soft-lander', 'in-development', 2027, 0],
-  ['chandrayaan-4', 'Chandrayaan-4', 'ISRO (India)', 'India', 'sample-return', 'in-development', 2028, 0],
-  ['lupex', 'LUPEX (Lunar Polar Exploration)', 'JAXA (Japan) and ISRO (India)', 'Multinational', 'rover', 'in-development', 2028, 0],
-  ['change-8', 'Chang’e 8', 'CNSA (China)', 'China', 'soft-lander', 'planned', 2029, 0],
-  // Пять страниц «Артемиды» есть в каталоге на сайте, но не в JSON (сверка 78 = 73 + 5)
-  ['artemis-1', 'Artemis I', 'NASA (US)', 'United States', 'orbiter', 'success', 2022, 0, '/moon/artemis-1'],
-  ['artemis-2', 'Artemis II', 'NASA (US)', 'United States', 'crewed-flyby', 'flown', 2026, 0, '/moon/artemis-2'],
-  ['artemis-3', 'Artemis III', 'NASA (US)', 'United States', 'other', 'planned', 2027, 0, '/moon/artemis-3'],
-  ['artemis-4', 'Artemis IV', 'NASA (US)', 'United States', 'crewed-landing', 'planned', null, 0, '/moon/artemis-4'],
-  ['artemis-5', 'Artemis V', 'NASA (US)', 'United States', 'other', 'planned', null, 0, '/moon/artemis-5'],
+  ["pioneer-lunar-program", "Pioneer Lunar Program (1958-1959)", "USA (ARPA/USAF, NASA, Army-JPL)", "United States", "program", "partial", 1958, 0, null, "images/moon/pioneer-lunar-program/juno-ii-launch-with-pioneer-4.thumb.webp", 6, "United States", null, "20 July 2026"],
+  ["luna-1", "Luna 1", "USSR (OKB-1)", "Soviet Union", "flyby", "partial", 1959, 0, null, "images/moon/luna-1/luna-1.thumb.webp", 3, "Soviet Union", null, "20 July 2026"],
+  ["luna-2", "Luna 2", "USSR (OKB-1)", "Soviet Union", "impactor", "success", 1959, 1, null, "images/moon/luna-2/autolycus-lroc-wac.thumb.webp", 4, "Soviet Union", [29.1, 0.0, 1], "20 July 2026"],
+  ["luna-3", "Luna 3", "USSR (OKB-1)", "Soviet Union", "flyby", "success", 1959, 0, null, "images/moon/luna-3/luna3-compare.thumb.webp", 5, "Soviet Union", null, "20 July 2026"],
+  ["ranger-program", "Ranger Program", "NASA / JPL (US)", "United States", "program", "success", 1961, 1, null, "images/moon/ranger-program/ranger-7-7-first-image-jul-31-1964.thumb.webp", 6, "United States", [-10.634, -20.677, 0], "20 July 2026"],
+  ["soviet-crewed-lunar-program", "Soviet Crewed Lunar Program", "USSR", "Soviet Union", "program", "cancelled", 1964, 0, null, "images/moon/soviet-crewed-lunar-program/n1-1m1-mockup-on-the-launch-pad-at-the-baikonur.thumb.webp", 5, "Soviet Union", null, "20 July 2026"],
+  ["luna-soft-landing-failures", "Luna soft-landing failures (E-6, 1963 to 1965)", "USSR", "Soviet Union", "soft-lander", "failure", 1965, 1, null, "images/moon/luna-soft-landing-failures/mare-nubium-lro.thumb.webp", 5, "Soviet Union", [-31.0, -8.0, 0], "20 July 2026"],
+  ["luna-10", "Luna 10", "USSR", "Soviet Union", "orbiter", "success", 1966, 0, null, "images/moon/luna-10/luna-10-musee-du-bourget-p1010504.thumb.webp", 3, "Soviet Union", null, "20 July 2026"],
+  ["luna-9", "Luna 9", "USSR", "Soviet Union", "soft-lander", "success", 1966, 1, null, "images/moon/luna-9/first-photo-surface.thumb.webp", 5, "Soviet Union", [7.08, -64.37, 1], "20 July 2026"],
+  ["lunar-orbiter-program", "Lunar Orbiter Program", "NASA (US)", "United States", "orbiter", "success", 1966, 1, null, "images/moon/lunar-orbiter-program/earthmoon-lo1-1966-lrg.thumb.webp", 5, "United States", [6.35, 160.71, 0], "20 July 2026"],
+  ["surveyor-1", "Surveyor 1", "NASA (US)", "United States", "soft-lander", "success", 1966, 1, null, "images/moon/surveyor-1/surveyor-1-9-lroc-image-2009-nasa-gsfc-asu.thumb.webp", 5, "United States", [-2.4745, -43.3398, 0], "20 July 2026"],
+  ["surveyor-2-7", "Surveyor 2 to 7", "NASA / JPL (US)", "United States", "soft-lander", "partial", 1966, 1, null, "images/moon/surveyor-2-7/surveyor-3-apollo-12.thumb.webp", 6, "United States", [-3.0162, -23.418, 0], "20 July 2026"],
+  ["apollo-8", "Apollo 8", "NASA (US)", "United States", "crewed-orbiter", "success", 1968, 0, null, "images/moon/apollo-8/as08-14-2383.thumb.webp", 6, "United States", null, "20 July 2026"],
+  ["zond-5", "Zond 5", "USSR", "Soviet Union", "flyby", "success", 1968, 0, null, "images/moon/zond-5/zond-5-descent-module.thumb.webp", 5, "Soviet Union", null, "20 July 2026"],
+  ["apollo-10", "Apollo 10", "NASA (US)", "United States", "crewed-orbiter", "success", 1969, 0, null, "images/moon/apollo-10/as10-34-5112.thumb.webp", 6, "United States", null, "20 July 2026"],
+  ["apollo-11", "Apollo 11", "NASA (US)", "United States", "crewed-landing", "success", 1969, 1, null, "images/moon/apollo-11/aldrin-visor.thumb.webp", 6, "United States", [0.6742, 23.4731, 0], "20 July 2026"],
+  ["apollo-12", "Apollo 12", "NASA (US)", "United States", "crewed-landing", "success", 1969, 1, null, "images/moon/apollo-12/as12-48-7134.thumb.webp", 5, "United States", [-3.0128, -23.4219, 0], "20 July 2026"],
+  ["luna-15", "Luna 15", "USSR", "Soviet Union", "sample-return", "failure", 1969, 1, null, "images/moon/luna-15/mare-crisium-lro.thumb.webp", 5, "Soviet Union", [17.0, 60.0, 1], "20 July 2026"],
+  ["apollo-13", "Apollo 13", "NASA (US)", "United States", "crewed-flyby", "partial", 1970, 1, null, "images/moon/apollo-13/as13-59-8500.thumb.webp", 6, "United States", [-2.55, -27.88, 0], "20 July 2026"],
+  ["luna-16", "Luna 16", "USSR", "Soviet Union", "sample-return", "success", 1970, 1, null, "images/moon/luna-16/luna16-figure-900.thumb.webp", 5, "Soviet Union", [-0.5137, 56.3638, 0], "20 July 2026"],
+  ["luna-17-lunokhod-1", "Luna 17 / Lunokhod 1", "USSR", "Soviet Union", "rover", "success", 1970, 1, null, "images/moon/luna-17-lunokhod-1/m175502049r-l17-thumb.thumb.webp", 5, "Soviet Union", [38.2376, -35.0016, 0], "20 July 2026"],
+  ["apollo-14", "Apollo 14", "NASA (US)", "United States", "crewed-landing", "success", 1971, 1, null, "images/moon/apollo-14/as14-66-09232-orig.thumb.webp", 5, "United States", [-3.6459, -17.4719, 0], "20 July 2026"],
+  ["apollo-15", "Apollo 15", "NASA (US)", "United States", "crewed-landing", "success", 1971, 1, null, "images/moon/apollo-15/as15-88-11866.thumb.webp", 6, "United States", [26.1324, 3.6333, 0], "20 July 2026"],
+  ["luna-18-23", "Luna 18 and Luna 23", "USSR", "Soviet Union", "sample-return", "failure", 1971, 1, null, "images/moon/luna-18-23/luna23-figure.thumb.webp", 5, "Soviet Union", [12.6667, 62.1511, 0], "20 July 2026"],
+  ["apollo-16", "Apollo 16", "NASA (US)", "United States", "crewed-landing", "success", 1972, 1, null, "images/moon/apollo-16/as16-113-18339.thumb.webp", 5, "United States", [-8.9734, 15.5011, 0], "20 July 2026"],
+  ["apollo-17", "Apollo 17", "NASA (US)", "United States", "crewed-landing", "success", 1972, 1, null, "images/moon/apollo-17/s72-55070.thumb.webp", 6, "United States", [20.1911, 30.7723, 0], "20 July 2026"],
+  ["luna-20", "Luna 20", "USSR", "Soviet Union", "sample-return", "success", 1972, 1, null, "images/moon/luna-20/m119482862re-l20m-ano.thumb.webp", 4, "Soviet Union", [3.7863, 56.6242, 0], "20 July 2026"],
+  ["luna-21-lunokhod-2", "Luna 21 / Lunokhod 2", "USSR", "Soviet Union", "rover", "success", 1973, 1, null, "images/moon/luna-21-lunokhod-2/m175070494lr-thumb.thumb.webp", 6, "Soviet Union", [26.005, 30.406, 0], "20 July 2026"],
+  ["luna-24", "Luna 24", "USSR", "Soviet Union", "sample-return", "success", 1976, 1, null, "images/moon/luna-24/luna24-rev-fig.thumb.webp", 4, "Soviet Union", [12.7142, 62.2129, 0], "20 July 2026"],
+  ["hiten", "Hiten (MUSES-A)", "ISAS (Japan)", "Japan", "orbiter", "success", 1990, 1, null, "images/moon/hiten/scale-model-of-the-hiten-muses-a-1990-007a-exhib.thumb.webp", 4, "Japan", [-34.3, 55.6, 0], "20 July 2026"],
+  ["clementine", "Clementine", "BMDO/NASA (US)", "United States", "orbiter", "partial", 1994, 0, null, "images/moon/clementine/pia00434.thumb.webp", 7, "United States", null, "20 July 2026"],
+  ["lunar-prospector", "Lunar Prospector", "NASA (US)", "United States", "orbiter", "success", 1998, 1, null, "images/moon/lunar-prospector/pia18162.thumb.webp", 7, "United States", [-88.14, 45.91, 0], "20 July 2026"],
+  ["smart-1", "SMART-1", "ESA (Europe)", "Europe (ESA)", "orbiter", "success", 2003, 1, null, "images/moon/smart-1/artist-s-impression-of-the-smart-1-mission.thumb.webp", 6, "Europe (ESA)", [-34.262, -46.193, 0], "20 July 2026"],
+  ["change-1", "Chang'e 1", "CNSA (China)", "China", "orbiter", "success", 2007, 1, null, "images/moon/change-1/chang-e-1.thumb.webp", 6, "China", [-1.66, 52.27, 0], "20 July 2026"],
+  ["kaguya", "Kaguya (SELENE)", "JAXA (Japan)", "Japan", "orbiter", "success", 2007, 1, null, "images/moon/kaguya/patch.thumb.webp", 5, "Japan", [-65.5, 80.4, 0], "20 July 2026"],
+  ["chandrayaan-1", "Chandrayaan-1", "ISRO (India)", "India", "orbiter", "success", 2008, 1, null, "images/moon/chandrayaan-1/pia12237.thumb.webp", 6, "India", [-89.55, -122.93, 0], "20 July 2026"],
+  ["lcross", "LCROSS", "NASA (US)", "United States", "impactor", "success", 2009, 1, null, "images/moon/lcross/acd06-0232-010.thumb.webp", 6, "United States", [-84.678, -48.6926, 0], "20 July 2026"],
+  ["lunar-reconnaissance-orbiter", "Lunar Reconnaissance Orbiter (LRO)", "NASA (US)", "United States", "orbiter", "operating", 2009, 0, null, "images/moon/lunar-reconnaissance-orbiter/gsfc-20171208-archive-e000496.thumb.webp", 6, "United States", null, "28 September 2026"],
+  ["change-2", "Chang'e 2", "CNSA (China)", "China", "orbiter", "success", 2010, 0, null, "images/moon/change-2/asteroid-4179-toutatis.thumb.webp", 7, "China", null, "20 July 2026"],
+  ["artemis-p1-p2", "ARTEMIS P1 and P2", "NASA (US)", "United States", "orbiter", "operating", 2011, 0, null, "images/moon/artemis-p1-p2/artemis.thumb.webp", 6, "United States", null, "26 October 2026"],
+  ["grail", "GRAIL (Ebb and Flow)", "NASA (US)", "United States", "orbiter", "success", 2011, 1, null, "images/moon/grail/pia12009.thumb.webp", 7, "United States", [75.609, -26.593, 0], "20 July 2026"],
+  ["change-3", "Chang'e 3 and Yutu", "CNSA (China)", "China", "rover", "success", 2013, 1, null, "images/moon/change-3/lroc-site.thumb.webp", 6, "China", [44.1214, -19.5116, 0], "20 July 2026"],
+  ["ladee", "LADEE", "NASA (US)", "United States", "orbiter", "success", 2013, 1, null, "images/moon/ladee/201309060010hq.thumb.webp", 7, "United States", [11.8494, -93.2493, 0], "20 July 2026"],
+  ["change-5-t1", "Chang'e 5-T1 (Xiaofei)", "CNSA (China)", "China", "flyby", "success", 2014, 0, null, "images/moon/change-5-t1/booster-0805-m1407760984r-map-str01-enlarge3x-11.thumb.webp", 5, "China", null, "20 July 2026"],
+  ["queqiao-1-longjiang", "Queqiao-1 and the Longjiang microsatellites", "CNSA / Harbin Institute of Technology (China)", "China", "relay", "partial", 2018, 1, null, "images/moon/queqiao-1-longjiang/img-d0ad1f96b6.thumb.webp", 7, "China", [16.6956, 159.517, 0], "20 July 2026"],
+  ["chandrayaan-2", "Chandrayaan-2", "ISRO (India)", "India", "orbiter", "partial", 2019, 1, null, "images/moon/chandrayaan-2/gslv-mk-iii-m1-chandrayaan-2-lifting-off-01.thumb.webp", 6, "India", [-70.881, 22.784, 0], "20 July 2026"],
+  ["change-4", "Chang'e 4 (Yutu-2 rover and Queqiao-1 relay)", "CNSA (China)", "China", "rover", "operating", 2019, 1, null, "images/moon/change-4/change4.thumb.webp", 6, "China", [-45.4561, 177.5885, 0], "20 July 2026"],
+  ["change-5", "Chang'e 5", "CNSA (China)", "China", "sample-return", "success", 2020, 1, null, "images/moon/change-5/content-ce5-1100p-image-version2.thumb.webp", 6, "China", [43.0576, -51.9161, 0], "20 July 2026"],
+  ["we0913a-rocket-body-2022", "WE0913A (2022 rocket body)", "Unattributed (evidence points to China)", "China", "debris", "debris", 2022, 1, null, "images/moon/we0913a-rocket-body-2022/booster-0805-m1407760984r-map-str01-enlarge3x-11.thumb.webp", 2, "China", [5.226, -125.514, 0], "9 August 2026"],
+  ["chandrayaan-3", "Chandrayaan-3", "ISRO (India)", "India", "rover", "success", 2023, 1, null, "images/moon/chandrayaan-3/vikram-by-pragyan.thumb.webp", 6, "India", [-69.3741, 32.32, 0], "20 July 2026"],
+  ["lunar-gateway", "Lunar Gateway", "NASA-led with ESA, JAXA, CSA, MBRSC (UAE)", "Multinational", "program", "in-development", 2017, 0, null, "images/moon/lunar-gateway/gateway-set-1-iac7-4k-bg-9.thumb.webp", 6, "Multinational", null, "20 July 2026"],
+  ["beresheet", "Beresheet", "SpaceIL / Israel Aerospace Industries (Israel, nonprofit-commercial)", "Israel", "soft-lander", "failure", 2019, 1, null, "images/moon/beresheet/content-beresheetimpact-after-box.thumb.webp", 5, "Israel", [32.5956, 19.3496, 0], "20 July 2026"],
+  ["beresheet-2", "Beresheet 2", "SpaceIL / Israel Aerospace Industries (Israel, nonprofit-commercial)", "Israel", "soft-lander", "in-development", 2020, 0, null, "images/moon/beresheet-2/spacecraft-03.thumb.webp", 1, "Israel", null, "26 October 2026"],
+  ["ilrs", "International Lunar Research Station (ILRS)", "CNSA (China) + Roscosmos (Russia), with ILRSCO partners", "Multinational", "program", "in-development", 2021, 0, null, "images/moon/ilrs/pia13523.thumb.webp", 4, "Multinational", null, "20 July 2026"],
+  ["artemis-1-cubesats", "Artemis I CubeSats", "Ten secondary payloads (NASA, JAXA, ASI/Argotec, universities and companies)", "Multinational", "flyby", "partial", 2022, 0, null, "images/moon/artemis-1-cubesats/ksc-20210714-ph-kls01-0020.thumb.webp", 6, "Multinational", null, "20 July 2026"],
+  ["capstone", "CAPSTONE", "Advanced Space for NASA (US, commercial)", "United States", "orbiter", "success", 2022, 0, null, "images/moon/capstone/acd22-0003-002.thumb.webp", 5, "United States", null, "20 July 2026"],
+  ["danuri", "Danuri (Korea Pathfinder Lunar Orbiter)", "KARI (South Korea)", "South Korea", "orbiter", "operating", 2022, 0, null, "images/moon/danuri/shadowcam-shackleton-crater-mosaic-072823.thumb.webp", 6, "South Korea", null, "28 September 2026"],
+  ["china-crewed-lunar-program", "China's Crewed Lunar Program", "CMSA (China)", "China", "program", "in-development", 2023, 0, null, "images/moon/china-crewed-lunar-program/max-q-abort.thumb.webp", 5, "China", null, "2 November 2026"],
+  ["ispace-hakuto-r", "ispace Hakuto-R Missions 1 and 2", "ispace (Japan, commercial)", "Japan", "soft-lander", "failure", 2023, 1, null, "images/moon/ispace-hakuto-r/m1504323448lr-mos-str01-crop-1300.thumb.webp", 6, "Japan", [60.4445, -4.588, 0], "20 July 2026"],
+  ["luna-25", "Luna 25", "Roscosmos (Russia)", "Russia", "soft-lander", "failure", 2023, 1, null, "images/moon/luna-25/fig01-luna25-crater-1100x1100-anot-copy.thumb.webp", 5, "Russia", [-57.865, 61.36, 0], "20 July 2026"],
+  ["change-6", "Chang'e 6 and Queqiao-2", "CNSA (China)", "China", "sample-return", "success", 2024, 1, null, "images/moon/change-6/ce6-after-notext.thumb.webp", 6, "China", [-41.6385, -153.9852, 0], "20 July 2026"],
+  ["im-1-odysseus", "IM-1 Odysseus", "Intuitive Machines (US, commercial, flying NASA CLPS payloads)", "United States", "soft-lander", "partial", 2024, 1, null, "images/moon/im-1-odysseus/nova-c-1100x1100-crop.thumb.webp", 5, "United States", [-80.13, 1.44, 0], "20 July 2026"],
+  ["peregrine-mission-one", "Peregrine Mission One", "Astrobotic (US, commercial, flying NASA CLPS payloads)", "United States", "soft-lander", "failure", 2024, 0, null, "images/moon/peregrine-mission-one/patch.thumb.webp", 4, "United States", null, "20 July 2026"],
+  ["slim", "SLIM (Smart Lander for Investigating Moon)", "JAXA (Japan)", "Japan", "soft-lander", "success", 2024, 1, null, "images/moon/slim/fig01-m1460739214l-1100x1100.thumb.webp", 6, "Japan", [-13.316, 25.251, 0], "20 July 2026"],
+  ["blue-ghost-1", "Firefly Blue Ghost Mission 1", "Firefly Aerospace (US, commercial)", "United States", "soft-lander", "success", 2025, 1, null, "images/moon/blue-ghost-1/patch.thumb.webp", 6, "United States", [18.5623, 61.8103, 0], "20 July 2026"],
+  ["im-2-athena", "Intuitive Machines IM-2 (Athena)", "Intuitive Machines (US, commercial)", "United States", "soft-lander", "partial", 2025, 1, null, "images/moon/im-2-athena/content-m1495922531-lrmos-warp-str01-str02-1300p.thumb.webp", 5, "United States", [-84.7906, 29.1957, 0], "20 July 2026"],
+  ["falcon-9-upper-stage-2026", "Falcon 9 upper stage (2025-010D)", "SpaceX (US)", "United States", "debris", "debris", 2026, 1, null, "images/moon/falcon-9-upper-stage-2026/ksc-20250115-ph-fmx02-0001.thumb.webp", 3, "United States", [19.4759, -93.2862, 0], "19 August 2026"],
+  ["griffin-mission-one", "Griffin Mission One", "Astrobotic (US, commercial; renamed Voyager Lunar Systems after Voyager Technologies' acquisition closed Jul 13, 2026)", "United States", "soft-lander", "in-development", 2026, 0, null, "images/moon/griffin-mission-one/turntable-0001-print.thumb.webp", 6, "United States", [-84.6, 31.0, 1], "2 November 2026"],
+  ["blue-moon-mk1", "Blue Moon Mark 1", "Blue Origin (US, commercial)", "United States", "program", "in-development", 2027, 0, null, "images/moon/blue-moon-mk1/blue-origin-mk-1-1.thumb.webp", 5, "United States", null, "2 November 2026"],
+  ["change-7", "Chang'e 7", "CNSA (China)", "China", "soft-lander", "in-development", 2027, 0, null, "images/moon/change-7/shadowcam-shackleton-crater-mosaic-072823.thumb.webp", 5, "China", [-88.8, 123.4, 1], "15 September 2026"],
+  ["chandrayaan-4", "Chandrayaan-4", "ISRO (India)", "India", "sample-return", "in-development", 2028, 0, null, "images/moon/chandrayaan-4/chandrayaan-4-integrated-module-computer-aided-d.thumb.webp", 6, "India", [-84.289, 32.808, 1], "20 July 2026"],
+  ["lupex", "LUPEX (Lunar Polar Exploration)", "JAXA (Japan) and ISRO (India)", "Multinational", "rover", "in-development", 2028, 0, null, "images/moon/lupex/lupex-1.thumb.webp", 5, "Multinational", null, "26 October 2026"],
+  ["change-8", "Chang'e 8", "CNSA (China)", "China", "soft-lander", "planned", 2029, 0, null, "images/moon/change-8/flyin-0001-print.thumb.webp", 5, "China", [-84.6, 31.0, 1], "20 July 2026"],
+  ["artemis-1", "Artemis I", "NASA", "United States", "other", "success", 2022, 0, "/moon/artemis-1", "images/moon/artemis-1/artemis-1-hero.thumb.webp", 6, "United States", null, "2 November 2026"],
+  ["artemis-2", "Artemis II", "NASA", "United States", "crewed-flyby", "success", 2026, 0, "/moon/artemis-2", "images/moon/artemis-2/artemis-2-hero.thumb.webp", 9, "United States", null, "2 November 2026"],
+  ["artemis-3", "Artemis III", "NASA", "United States", "other", "in-development", 2027, 0, "/moon/artemis-3", "images/moon/artemis-3/artemis-3-hero.thumb.webp", 2, "United States", null, "2 November 2026"],
+  ["artemis-4", "Artemis IV", "NASA", "United States", "crewed-landing", "in-development", 2028, 0, "/moon/artemis-4", "images/moon/artemis-4/artemis-4-hero.thumb.webp", 2, "United States", null, "2 November 2026"],
+  ["artemis-5", "Artemis V", "NASA", "United States", "other", "in-development", 2028, 0, "/moon/artemis-5", "images/moon/artemis-5/artemis-logo-white.thumb.webp", 1, "United States", null, "2 November 2026"],
 ];
-
-// [slug, название, оператор, тип записи AZMTH, тип, статус, год, координаты есть (1/0)]
+// Mars: [slug, name, operator, AZMTH entry kind, type, outcome, year, has coordinates (1/0), page path, thumbnail, images, nation, [lat, lon, approximate], facts checked]
 const ARCHIVE_MARS = [
-  ['mars-1m-1960', 'Mars 1M No. 1 and No. 2', 'OKB-1 (USSR)', 'mission', 'flyby', 'failure', 1960, 0],
-  ['mars-2mv-1962', 'Sputnik 22, Mars 1 and Sputnik 24', 'OKB-1 (USSR)', 'mission', 'flyby', 'partial', 1962, 0],
-  ['mariner-3', 'Mariner 3', 'NASA', 'mission', 'flyby', 'failure', 1964, 0],
-  ['zond-2', 'Zond 2', 'OKB-1 (USSR)', 'mission', 'flyby', 'failure', 1964, 0],
-  ['zond-3', 'Zond 3', 'OKB-1 (USSR)', 'mission', 'flyby', 'success', 1964, 0],
-  ['mariner-4', 'Mariner 4', 'NASA', 'mission', 'flyby', 'success', 1965, 0],
-  ['soviet-crewed-mars', 'The Soviet crewed Mars programme', 'USSR', 'programme', 'program', 'cancelled', 1960, 0],
-  ['voyager-mars', 'Voyager (Mars)', 'NASA', 'programme', 'program', 'cancelled', 1960, 0],
-  ['mars-excursion-module', 'Mars Excursion Module', 'NASA', 'mission', 'lander', 'cancelled', 1963, 0],
-  ['mars-4nm-5nm', 'Mars 4NM and 5NM', 'USSR', 'programme', 'program', 'cancelled', 1968, 0],
-  ['mariner-6-7', 'Mariner 6 and 7', 'NASA', 'mission', 'flyby', 'success', 1969, 0],
-  ['mars-1969a-b', 'Mars 1969A and 1969B', 'USSR', 'mission', 'orbiter', 'failure', 1969, 0],
-  ['prop-m', 'PrOP-M', 'USSR', 'instrument', 'rover', 'failure', 1970, 1],
-  ['kosmos-419', 'Kosmos 419', 'USSR', 'mission', 'orbiter', 'failure', 1971, 0],
-  ['mariner-8', 'Mariner 8', 'NASA', 'mission', 'orbiter', 'failure', 1971, 0],
-  ['mariner-9', 'Mariner 9', 'NASA', 'mission', 'orbiter', 'success', 1971, 0],
-  ['mars-2', 'Mars 2', 'USSR', 'mission', 'lander', 'partial', 1971, 1],
-  ['mars-3', 'Mars 3', 'USSR', 'mission', 'lander', 'partial', 1971, 1],
-  ['mars-4-7', 'Mars 4, 5, 6 and 7', 'USSR', 'mission', 'lander', 'partial', 1973, 1],
-  ['mars-5m', 'Mars 5M', 'USSR', 'mission', 'sample-return', 'cancelled', 1973, 0],
-  ['viking-biology', 'The Viking biology results', 'NASA', 'finding', 'program', 'partial', 1976, 0],
-  ['viking-1', 'Viking 1', 'NASA', 'mission', 'lander', 'success', 1976, 1],
-  ['viking-2', 'Viking 2', 'NASA', 'mission', 'lander', 'success', 1976, 1],
-  ['mars-94-98', 'Mars 94 and Mars 98', 'USSR and Russia (IKI, NPO Lavochkin, VNIITransmash), with CNES and NASA', 'programme', 'program', 'cancelled', 1985, 0],
-  ['mars-aerostat', 'Mars Aerostat', 'CNES and IKI (France, USSR then Russia)', 'programme', 'aircraft', 'cancelled', 1986, 0],
-  ['cancelled-sample-returns', 'The sample returns cancelled before this one', 'NASA / CNES', 'programme', 'sample-return', 'cancelled', 1987, 0],
-  ['phobos-1-2', 'Phobos 1 and 2', 'USSR', 'mission', 'orbiter', 'partial', 1988, 0],
-  ['sei-mars', 'Space Exploration Initiative: the Mars element', 'White House and NASA (United States)', 'programme', 'program', 'cancelled', 1989, 0],
-  ['mars-networks-never-built', 'The Mars networks that were never built', 'NASA, ESA, CNES', 'programme', 'program', 'cancelled', 1991, 0],
-  ['mars-observer', 'Mars Observer', 'NASA', 'mission', 'orbiter', 'failure', 1993, 0],
-  ['mars-surveyor-program', 'Mars Surveyor Program', 'NASA', 'programme', 'program', 'partial', 1993, 0],
-  ['mars-surveyor-2001-lander', 'Mars Surveyor 2001 Lander', 'NASA', 'mission', 'lander', 'cancelled', 1994, 0],
-  ['mars-96', 'Mars 96', 'Roscosmos', 'mission', 'orbiter', 'failure', 1996, 0],
-  ['mars-global-surveyor', 'Mars Global Surveyor', 'NASA', 'mission', 'orbiter', 'ended', 1996, 0],
-  ['mars-pathfinder', 'Mars Pathfinder and Sojourner', 'NASA', 'mission', 'rover', 'success', 1997, 1],
-  ['mars-micromission-kitty-hawk', 'Mars Micromissions and the Kitty Hawk airplane', 'NASA and CNES', 'programme', 'program', 'cancelled', 1998, 0],
-  ['nozomi', 'Nozomi', 'ISAS/JAXA', 'mission', 'orbiter', 'failure', 1998, 0],
-  ['deep-space-2', 'Deep Space 2', 'NASA', 'mission', 'penetrator', 'failure', 1999, 0],
-  ['mars-climate-orbiter', 'Mars Climate Orbiter', 'NASA', 'mission', 'orbiter', 'failure', 1999, 0],
-  ['mars-polar-lander', 'Mars Polar Lander', 'NASA', 'mission', 'lander', 'failure', 1999, 1],
-  ['life-detection-not-flown', 'Life detection: the missions NASA did not fly', 'NASA', 'programme', 'program', 'cancelled', 1976, 0],
-  ['ares-mars-airplane', 'ARES, the Mars airplane', 'NASA', 'mission', 'aircraft', 'cancelled', 1978, 0],
-  ['mars-moons-missions-not-flown', 'The Phobos and Deimos missions that were never flown', 'NASA, ESA and national teams', 'programme', 'program', 'cancelled', 1997, 0],
-  ['mars-no-ride', 'The Mars hardware with no ride', 'Finnish Meteorological Institute, Lavochkin, INTA, Thoth Technology, NASA/JPL', 'programme', 'program', 'cancelled', 2000, 0],
-  ['mars-scout-program', 'The Mars Scout Program', 'NASA', 'programme', 'program', 'ended', 2000, 0],
-  ['mars-odyssey', '2001 Mars Odyssey', 'NASA', 'mission', 'orbiter', 'operating', 2001, 0],
-  ['beagle-2', 'Beagle 2', 'ESA / UK', 'mission', 'lander', 'failure', 2003, 1],
-  ['mars-express', 'Mars Express', 'ESA', 'mission', 'orbiter', 'operating', 2003, 0],
-  ['mars-telecom-orbiter', 'Mars Telecommunications Orbiter', 'NASA', 'mission', 'orbiter', 'cancelled', 2003, 0],
-  ['opportunity', 'Opportunity (MER-B)', 'NASA', 'mission', 'rover', 'ended', 2004, 1],
-  ['spirit', 'Spirit (MER-A)', 'NASA', 'mission', 'rover', 'ended', 2004, 1],
-  ['mars-place-names', 'The place names of Mars', 'IAU', 'site', 'program', 'operating', 2004, 1],
-  ['wtc-aluminium-mars', 'World Trade Center Aluminium on Mars', 'Honeybee Robotics, with NASA JPL', 'artefact', 'artefact', 'success', 2004, 1],
-  ['mars-reconnaissance-orbiter', 'Mars Reconnaissance Orbiter', 'NASA', 'mission', 'orbiter', 'operating', 2006, 0],
-  ['mars-500', 'Mars-500, SIRIUS and CHAPEA', 'Institute of Biomedical Problems, Moscow, with ESA, China and NASA', 'analogue', 'analogue', 'success', 2007, 0],
-  ['max-c', 'MAX-C and the Mars Exploration Joint Initiative', 'NASA / ESA', 'programme', 'rover', 'cancelled', 2008, 0],
-  ['melos', 'MELOS', 'ISAS and JAXA (Japan)', 'programme', 'program', 'cancelled', 2008, 0],
-  ['phoenix', 'Phoenix', 'NASA', 'mission', 'lander', 'ended', 2008, 1],
-  ['visions-of-mars', 'Visions of Mars', 'The Planetary Society, with IKI and NASA', 'artefact', 'artefact', 'success', 2008, 1],
-  ['phobos-grunt-yinghuo-1', 'Phobos-Grunt and Yinghuo-1', 'Roscosmos (Russia) and CNSA (China)', 'mission', 'sample-return', 'failure', 2011, 0],
-  ['red-dragon', 'Red Dragon', 'SpaceX with NASA Ames Research Center (United States)', 'mission', 'lander', 'cancelled', 2011, 0],
-  ['curiosity', 'Curiosity (Mars Science Laboratory)', 'NASA', 'mission', 'rover', 'operating', 2012, 1],
-  ['mars-one', 'Mars One', 'Mars One Foundation (Netherlands) and Mars One Ventures AG (Switzerland)', 'programme', 'program', 'cancelled', 2012, 0],
-  ['inspiration-mars', 'Inspiration Mars', 'Inspiration Mars Foundation (United States)', 'programme', 'flyby', 'cancelled', 2013, 0],
-  ['mangalyaan', 'Mars Orbiter Mission (Mangalyaan)', 'ISRO', 'mission', 'orbiter', 'ended', 2014, 0],
-  ['maven', 'MAVEN', 'NASA', 'mission', 'orbiter', 'ended', 2014, 0],
-  ['exomars-tgo', 'ExoMars Trace Gas Orbiter', 'ESA and Roscosmos', 'mission', 'orbiter', 'operating', 2016, 0],
-  ['schiaparelli', 'Schiaparelli EDM', 'ESA', 'mission', 'lander', 'failure', 2016, 1],
-  ['insight', 'InSight', 'NASA', 'mission', 'lander', 'ended', 2018, 1],
-  ['marco-a-b', 'MarCO A and B', 'NASA', 'mission', 'flyby', 'success', 2018, 0],
-  ['insight-mole', 'The HP3 Mole', 'DLR / NASA', 'instrument', 'penetrator', 'failure', 2018, 1],
-  ['mars-gravity-assists', 'Mars gravity assists', 'ESA and NASA', 'programme', 'flyby', 'success', 2004, 0],
-  ['mars-as-observatory', 'Mars as an observatory', 'NASA, ESA and CNSA', 'programme', 'program', 'operating', 2013, 0],
-  ['kazachok', 'Kazachok', 'Roscosmos, with ESA', 'mission', 'lander', 'cancelled', 2015, 0],
-  ['i-mim', 'International Mars Ice Mapper', 'NASA, CSA, JAXA and ASI, later joined by the Netherlands Space Office', 'mission', 'orbiter', 'cancelled', 2020, 0],
-  ['msr-cancelled-vehicles', 'The deleted Mars Sample Return vehicles', 'NASA / ESA', 'programme', 'sample-return', 'cancelled', 2020, 0],
-  ['tianwen-1-cameras', 'Tianwen-1’s deployable cameras', 'CNSA', 'instrument', 'artefact', 'success', 2020, 1],
-  ['hope-emm', 'Hope (Emirates Mars Mission)', 'MBRSC and UAE Space Agency (United Arab Emirates)', 'mission', 'orbiter', 'operating', 2021, 0],
-  ['ingenuity', 'Ingenuity', 'NASA', 'mission', 'helicopter', 'ended', 2021, 1],
-  ['messages-to-mars', 'Messages to Mars', 'USSR, NASA, ESA and CNSA', 'artefact', 'artefact', 'success', 2021, 1],
-  ['perseverance', 'Perseverance (Mars 2020)', 'NASA', 'mission', 'rover', 'operating', 2021, 1],
-  ['send-your-name-to-mars', 'Send Your Name to Mars', 'NASA and The Planetary Society', 'artefact', 'artefact', 'success', 2021, 1],
-  ['mars-microphone', 'The Mars Microphone', 'The Planetary Society / NASA / CNES', 'instrument', 'artefact', 'operating', 2021, 1],
-  ['tianwen-1', 'Tianwen-1', 'CNSA (China)', 'mission', 'orbiter', 'operating', 2021, 0],
-  ['zhurong', 'Zhurong', 'CNSA (China)', 'mission', 'rover', 'ended', 2021, 1],
-  ['three-forks-depot', 'The Three Forks sample depot', 'NASA', 'artefact', 'sample-depot', 'operating', 2023, 1, '/mars/artefacts/three-forks-depot'],
-  ['hera-deimos', 'Hera at Deimos', 'ESA', 'mission', 'flyby', 'success', 2024, 0],
-  ['escapade', 'ESCAPADE', 'NASA / UC Berkeley Space Sciences Laboratory / Rocket Lab', 'mission', 'orbiter', 'operating', 2025, 0],
-  ['idefix', 'Idefix (MMX Phobos rover)', 'CNES and DLR, flying with JAXA', 'mission', 'rover', 'operating', 2026, 0],
-  ['mmx', 'Martian Moons eXploration (MMX)', 'JAXA', 'mission', 'sample-return', 'operating', 2026, 0],
-  ['mars-orbit-graveyard', 'The derelict fleet in Mars orbit', 'various', 'site', 'orbiter', 'debris', 2026, 0],
-  ['descent-hardware', 'What we left behind: parachutes, backshells and heat shields', 'various', 'artefact', 'descent-hardware', 'success', 2026, 1],
-  ['fobos-grunt-2-boomerang', 'Fobos-Grunt 2, Boomerang and Mars-Grunt', 'Roscosmos', 'programme', 'program', 'cancelled', 2012, 0],
-  ['mangalyaan-2', 'Mangalyaan-2 (Mars Lander Mission)', 'ISRO', 'mission', 'lander', 'planned', 2014, 0],
-  ['china-crewed-mars', 'China’s crewed Mars plans', 'CASC and CNSA (China)', 'programme', 'program', 'planned', 2016, 0],
-  ['starship-mars', 'Starship and Mars', 'SpaceX', 'programme', 'program', 'in-development', 2016, 0],
-  ['national-mars-ambitions', 'National Mars ambitions', 'MBRSC and the UAE Space Agency; KASA (South Korea); others', 'programme', 'program', 'planned', 2017, 0],
-  ['mars-science-helicopter', 'Mars Science Helicopter and Chopper', 'NASA JPL, NASA Ames and AeroVironment', 'programme', 'helicopter', 'in-development', 2020, 0],
-  ['mars-life-explorer', 'Mars Life Explorer', 'NASA', 'mission', 'lander', 'planned', 2021, 0],
-  ['skyfall', 'SkyFall', 'NASA and AeroVironment', 'mission', 'helicopter', 'in-development', 2021, 0],
-  ['impulse-relativity-lander', 'The Impulse and Relativity Mars lander', 'Impulse Space and Relativity Space', 'mission', 'lander', 'planned', 2022, 0],
-  ['cmps-mars-future-missions', 'Commercial Mars Payload Services and Mars Future Missions', 'NASA', 'programme', 'program', 'in-development', 2023, 0],
-  ['esa-lightship', 'LightShip, SpotLight and MARCONI', 'ESA', 'programme', 'program', 'in-development', 2023, 0],
-  ['mars-telecom-network', 'Mars Telecommunications Network', 'NASA', 'programme', 'orbiter', 'in-development', 2025, 0],
-  ['aeolus-relativity', 'Aeolus and the Relativity Mars orbiter', 'NASA and Relativity Space', 'mission', 'orbiter', 'in-development', 2026, 0],
-  ['mars-sample-return', 'Mars Sample Return (NASA and ESA)', 'NASA / ESA', 'programme', 'program', 'cancelled', 2026, 0],
-  ['humans-to-mars', 'Sending people to Mars', 'various', 'programme', 'program', 'planned', 2026, 0],
-  ['sr-1-freedom', 'Space Reactor-1 Freedom', 'NASA', 'mission', 'flyby', 'in-development', 2026, 0],
-  ['rosalind-franklin', 'Rosalind Franklin rover', 'ESA, with NASA', 'mission', 'rover', 'in-development', 2028, 0],
-  ['tianwen-3', 'Tianwen-3 (天问三号)', 'CNSA', 'mission', 'sample-return', 'in-development', 2028, 0],
+  ["mars-1m-1960", "Mars 1M No. 1 and No. 2", "OKB-1 (USSR)", "mission", "flyby", "failure", 1960, 0, null, "images/mars/mars-1m-1960/01-a-molniya-8k78-going-vertical-at-baikonur-captio.thumb.webp", 3, "Soviet Union", null, "2026-08-23"],
+  ["mars-2mv-1962", "Sputnik 22, Mars 1 and Sputnik 24", "OKB-1 (USSR)", "mission", "flyby", "partial", 1962, 0, null, "images/mars/mars-2mv-1962/01-mars-1-as-a-nasa-three-dimensional-rendering-not.thumb.webp", 4, "Soviet Union", null, "2026-08-23"],
+  ["mariner-3", "Mariner 3", "NASA", "mission", "flyby", "failure", 1964, 0, null, "images/mars/mariner-3/01-mariner-3-at-cape-kennedy-in-september-1964-its.thumb.webp", 3, "United States", null, "2026-08-23"],
+  ["zond-2", "Zond 2", "OKB-1 (USSR)", "mission", "flyby", "failure", 1964, 0, null, "images/mars/zond-2/01-a-3mv-spacecraft-released-by-nasa-as-a-photograp.thumb.webp", 3, "Soviet Union", null, "2026-08-23"],
+  ["zond-3", "Zond 3", "OKB-1 (USSR)", "mission", "flyby", "success", 1964, 0, null, "images/mars/zond-3/01-the-zond-3-exhibit-in-kaluga-a-museum-article-st.thumb.webp", 4, "Soviet Union", null, "2026-08-27"],
+  ["mariner-4", "Mariner 4", "NASA", "mission", "flyby", "success", 1965, 0, null, "images/mars/mariner-4/01-mariner-4-rigged-for-a-weight-test-in-the-jpl-cl.thumb.webp", 7, "United States", null, "2026-09-24"],
+  ["soviet-crewed-mars", "The Soviet crewed Mars programme", "USSR", "programme", "program", "cancelled", 1960, 0, null, "images/mars/soviet-crewed-mars/01-mavr-laid-out-a-greenhouse-an-airlock-a-detachab.thumb.webp", 6, "Soviet Union", null, "2026-08-24"],
+  ["voyager-mars", "Voyager (Mars)", "NASA", "programme", "program", "cancelled", 1960, 0, null, "images/mars/voyager-mars/01-the-voyager-spacecraft-as-nasa-drew-it-in-1967-o.thumb.webp", 5, "United States", null, "2026-08-24"],
+  ["mars-excursion-module", "Mars Excursion Module", "NASA", "mission", "soft-lander", "cancelled", 1963, 0, null, "images/mars/mars-excursion-module/01-the-mars-excursion-module-as-philco-aeronutronic.thumb.webp", 6, "United States", null, "2026-08-24"],
+  ["mars-4nm-5nm", "Mars 4NM and 5NM", "USSR", "programme", "program", "cancelled", 1968, 0, null, "images/mars/mars-4nm-5nm/01-the-20-tonne-5nm-sample-return-vehicle-in-a-sovi.thumb.webp", 5, "Soviet Union", null, "2026-08-24"],
+  ["mariner-6-7", "Mariner 6 and 7", "NASA", "mission", "flyby", "success", 1969, 0, null, "images/mars/mariner-6-7/01-mariner-6-leaving-launch-complex-36b-on-the-nigh.thumb.webp", 6, "United States", null, "2026-08-23"],
+  ["mars-1969a-b", "Mars 1969A and 1969B", "USSR", "mission", "orbiter", "failure", 1969, 0, null, "images/mars/mars-1969a-b/01-an-m-69-in-the-assembly-hall-with-the-people-who.thumb.webp", 3, "Soviet Union", null, "2026-08-23"],
+  ["prop-m", "PrOP-M", "USSR", "instrument", "rover", "failure", 1970, 1, null, "images/mars/prop-m/01-a-prop-m-that-stayed-on-earth-two-skis-the-penet.thumb.webp", 6, "Soviet Union", [-45.0, -158.0, 0], "2026-08-27"],
+  ["kosmos-419", "Kosmos 419", "USSR", "mission", "orbiter", "failure", 1971, 0, null, "images/mars/kosmos-419/01-the-m-71c-spacecraft-the-design-flown-as-kosmos.thumb.webp", 2, "Soviet Union", null, "2026-09-24"],
+  ["mariner-8", "Mariner 8", "NASA", "mission", "orbiter", "failure", 1971, 0, null, "images/mars/mariner-8/01-mariner-h-having-its-solar-panels-fitted-at-cape.thumb.webp", 3, "United States", null, "2026-08-23"],
+  ["mariner-9", "Mariner 9", "NASA", "mission", "orbiter", "success", 1971, 0, null, "images/mars/mariner-9/01-mariner-i-soon-to-be-mariner-9-getting-its-final.thumb.webp", 7, "United States", null, "2026-09-24"],
+  ["mars-2", "Mars 2", "USSR", "mission", "soft-lander", "partial", 1971, 1, null, "images/mars/mars-2/01-an-m-71-station-of-the-1971-pair-mars-2-and-mars.thumb.webp", 5, "Soviet Union", [-45.0, 47.0, 1], "2026-08-23"],
+  ["mars-3", "Mars 3", "USSR", "mission", "soft-lander", "partial", 1971, 1, null, "images/mars/mars-3/01-the-mars-3-station-in-1971-from-the-russian-stat.thumb.webp", 7, "Soviet Union", [-45.0, -158.0, 1], "2026-08-23"],
+  ["mars-4-7", "Mars 4, 5, 6 and 7", "USSR", "mission", "soft-lander", "partial", 1973, 1, null, "images/mars/mars-4-7/01-an-m-73-station-of-the-1973-mars-flotilla-in-the.thumb.webp", 6, "Soviet Union", [-23.9, -19.42, 1], "2026-08-23"],
+  ["mars-5m", "Mars 5M", "USSR", "mission", "sample-return", "cancelled", 1973, 0, null, "images/mars/mars-5m/01-the-5m-complex-on-its-own-drawing-sheet-umbrella.thumb.webp", 2, "Soviet Union", null, "2026-08-24"],
+  ["viking-biology", "The Viking biology results", "NASA", "finding", "program", "partial", 1976, 0, null, "images/mars/viking-biology/01-an-unflown-viking-biology-instrument-with-the-py.thumb.webp", 7, "United States", null, "2026-09-24"],
+  ["viking-1", "Viking 1", "NASA", "mission", "soft-lander", "success", 1976, 1, null, "images/mars/viking-1/01-the-first-picture-ever-taken-from-the-surface-of.thumb.webp", 7, "United States", [22.273, -47.946, 0], "2026-08-23"],
+  ["viking-2", "Viking 2", "NASA", "mission", "soft-lander", "success", 1976, 1, null, "images/mars/viking-2/01-frost-at-utopia-planitia-on-18-may-1979-one-mart.thumb.webp", 5, "United States", [47.6673, 134.2809, 0], "2026-08-23"],
+  ["mars-94-98", "Mars 94 and Mars 98", "USSR and Russia (IKI, NPO Lavochkin, VNIITransmash), with CNES and NASA", "programme", "program", "cancelled", 1985, 0, null, "images/mars/mars-94-98/01-the-six-tonne-machine-mars-94-was-built-around-i.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["mars-aerostat", "Mars Aerostat", "CNES and IKI (France, USSR then Russia)", "programme", "aircraft", "cancelled", 1986, 0, null, "images/mars/mars-aerostat/01-the-balloon-actually-flying-over-the-mojave-in-1.thumb.webp", 5, "Multinational", null, "2026-09-24"],
+  ["cancelled-sample-returns", "The sample returns cancelled before this one", "NASA / CNES", "programme", "sample-return", "cancelled", 1987, 0, null, "images/mars/cancelled-sample-returns/01-mars-rover-sample-return-as-nasa-painted-it-in-m.thumb.webp", 2, "Multinational", null, "2026-08-24"],
+  ["phobos-1-2", "Phobos 1 and 2", "USSR", "mission", "orbiter", "partial", 1988, 0, null, "images/mars/phobos-1-2/01-a-phobos-1f-station-in-the-assembly-hall-at-the.thumb.webp", 6, "Soviet Union", null, "2026-08-23"],
+  ["sei-mars", "Space Exploration Initiative: the Mars element", "White House and NASA (United States)", "programme", "program", "cancelled", 1989, 0, null, "images/mars/sei-mars/01-the-announcement-itself-at-the-national-air-and.thumb.webp", 4, "United States", null, "2026-08-24"],
+  ["mars-networks-never-built", "The Mars networks that were never built", "NASA, ESA, CNES", "programme", "program", "cancelled", 1991, 0, null, "images/mars/mars-networks-never-built/01-how-one-of-the-sixteen-mesur-stations-was-to-arr.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["mars-observer", "Mars Observer", "NASA", "mission", "orbiter", "failure", 1993, 0, null, "images/mars/mars-observer/01-launch-25-september-1992-the-commercial-titan-ii.thumb.webp", 4, "United States", null, "2026-08-23"],
+  ["mars-surveyor-program", "Mars Surveyor Program", "NASA", "programme", "program", "partial", 1993, 0, null, "images/mars/mars-surveyor-program/01-the-mars-orbiter-camera-going-onto-mars-global-s.thumb.webp", 5, "United States", null, "2026-09-24"],
+  ["mars-surveyor-2001-lander", "Mars Surveyor 2001 Lander", "NASA", "mission", "soft-lander", "cancelled", 1994, 0, null, "images/mars/mars-surveyor-2001-lander/01-the-mars-surveyor-2001-lander-during-assembly-te.thumb.webp", 6, "United States", null, "2026-08-27"],
+  ["mars-96", "Mars 96", "Roscosmos", "mission", "orbiter", "failure", 1996, 0, null, "images/mars/mars-96/01-mars-96-in-the-assembly-hall-the-man-at-the-bott.thumb.webp", 3, "Russia", null, "2026-08-23"],
+  ["mars-global-surveyor", "Mars Global Surveyor", "NASA", "mission", "orbiter", "ended", 1996, 0, null, "images/mars/mars-global-surveyor/01-the-spacecraft-itself-with-its-solar-panels-spre.thumb.webp", 5, "United States", null, "2026-08-23"],
+  ["mars-pathfinder", "Mars Pathfinder and Sojourner", "NASA", "mission", "rover", "success", 1997, 1, null, "images/mars/mars-pathfinder/01-sojourner-at-yogi-with-the-lander-s-solar-panel.thumb.webp", 7, "United States", [19.13, -33.22, 0], "2026-09-24"],
+  ["mars-micromission-kitty-hawk", "Mars Micromissions and the Kitty Hawk airplane", "NASA and CNES", "programme", "program", "cancelled", 1998, 0, null, "images/mars/mars-micromission-kitty-hawk/01-kitty-hawk-over-valles-marineris-in-the-picture.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["nozomi", "Nozomi", "ISAS/JAXA", "mission", "orbiter", "failure", 1998, 0, null, "images/mars/nozomi/01-nozomi-still-called-planet-b-in-the-isas-clean-r.thumb.webp", 3, "Japan", null, "2026-08-23"],
+  ["deep-space-2", "Deep Space 2", "NASA", "mission", "penetrator", "failure", 1999, 0, null, "images/mars/deep-space-2/01-both-probes-bolted-to-the-cruise-stage-at-kenned.thumb.webp", 4, "United States", null, "2026-08-23"],
+  ["mars-climate-orbiter", "Mars Climate Orbiter", "NASA", "mission", "orbiter", "failure", 1999, 0, null, "images/mars/mars-climate-orbiter/01-the-spacecraft-itself-mars-climate-orbiter-in-ac.thumb.webp", 4, "United States", null, "2026-09-24"],
+  ["mars-polar-lander", "Mars Polar Lander", "NASA", "mission", "soft-lander", "failure", 1999, 1, null, "images/mars/mars-polar-lander/01-mars-polar-lander-in-the-clean-room-at-kennedy-s.thumb.webp", 3, "United States", [-76.0, 165.0, 1], "2026-09-24"],
+  ["life-detection-not-flown", "Life detection: the missions NASA did not fly", "NASA", "programme", "program", "cancelled", 1976, 0, null, "images/mars/life-detection-not-flown/01-the-one-piece-of-dedicated-life-detection-hardwa.thumb.webp", 5, "United States", null, "2026-09-24"],
+  ["ares-mars-airplane", "ARES, the Mars airplane", "NASA", "mission", "aircraft", "cancelled", 1978, 0, null, "images/mars/ares-mars-airplane/01-the-ares-team-at-langley-around-the-full-scale-t.thumb.webp", 6, "United States", null, "2026-08-24"],
+  ["mars-moons-missions-not-flown", "The Phobos and Deimos missions that were never flown", "NASA, ESA and national teams", "programme", "program", "cancelled", 1997, 0, null, "images/mars/mars-moons-missions-not-flown/01-padme-the-ladee-derived-orbiter-pascal-lee-s-tea.thumb.webp", 5, "Multinational", null, "2026-08-24"],
+  ["mars-no-ride", "The Mars hardware with no ride", "Finnish Meteorological Institute, Lavochkin, INTA, Thoth Technology, NASA/JPL", "programme", "program", "cancelled", 2000, 0, null, "images/mars/mars-no-ride/01-marie-curie-in-the-national-air-and-space-museum.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["mars-scout-program", "The Mars Scout Program", "NASA", "programme", "program", "ended", 2000, 0, null, "images/mars/mars-scout-program/01-the-first-mars-scout-arriving-photographed-by-an.thumb.webp", 5, "United States", null, "2026-08-24"],
+  ["mars-odyssey", "2001 Mars Odyssey", "NASA", "mission", "orbiter", "operating", 2001, 0, null, "images/mars/mars-odyssey/01-the-real-thing-before-it-left-odyssey-being-set.thumb.webp", 6, "United States", null, "2026-10-28"],
+  ["beagle-2", "Beagle 2", "ESA / UK", "mission", "soft-lander", "failure", 2003, 1, null, "images/mars/beagle-2/01-what-beagle-2-was-supposed-to-look-like-on-mars.thumb.webp", 7, "Europe", [11.5288, 90.4314, 0], "2026-08-23"],
+  ["mars-express", "Mars Express", "ESA", "mission", "orbiter", "operating", 2003, 0, null, "images/mars/mars-express/01-mars-express-over-mars-the-spacecraft-is-an-illu.thumb.webp", 6, "Europe", null, "2026-09-24"],
+  ["mars-telecom-orbiter", "Mars Telecommunications Orbiter", "NASA", "mission", "orbiter", "cancelled", 2003, 0, null, "images/mars/mars-telecom-orbiter/01-the-mars-telecommunications-orbiter-as-jpl-drew.thumb.webp", 3, "United States", null, "2026-08-24"],
+  ["opportunity", "Opportunity (MER-B)", "NASA", "mission", "rover", "ended", 2004, 1, null, "images/mars/opportunity/01-opportunity-photographing-itself-in-january-2014.thumb.webp", 7, "United States", [-1.946, -5.527, 0], "2026-10-28"],
+  ["spirit", "Spirit (MER-A)", "NASA", "mission", "rover", "ended", 2004, 1, null, "images/mars/spirit/01-spirit-on-the-summit-of-husband-hill-in-august-2.thumb.webp", 7, "United States", [-14.5692, 175.4729, 0], "2026-08-23"],
+  ["mars-place-names", "The place names of Mars", "IAU", "site", "program", "operating", 2004, 1, null, "images/mars/mars-place-names/01-the-official-map-on-which-every-printed-word-has.thumb.webp", 6, "Multinational", [22.273, -47.946, 0], "2026-08-24"],
+  ["wtc-aluminium-mars", "World Trade Center Aluminium on Mars", "Honeybee Robotics, with NASA JPL", "artefact", "artefact", "success", 2004, 1, null, "images/mars/wtc-aluminium-mars/01-the-cable-guard-on-spirit-s-rock-abrasion-tool-p.thumb.webp", 3, "United States", [-2.335, -5.348, 0], "2026-08-24"],
+  ["mars-reconnaissance-orbiter", "Mars Reconnaissance Orbiter", "NASA", "mission", "orbiter", "operating", 2006, 0, null, "images/mars/mars-reconnaissance-orbiter/01-artist-s-concept-of-mro-over-nilosyrtis-an-illus.thumb.webp", 7, "United States", null, "2026-10-28"],
+  ["mars-500", "Mars-500, SIRIUS and CHAPEA", "Institute of Biomedical Problems, Moscow, with ESA, China and NASA", "analogue", "analogue", "success", 2007, 0, null, "images/mars/mars-500/01-the-mars500-chambers-seen-from-outside-in-their.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["max-c", "MAX-C and the Mars Exploration Joint Initiative", "NASA / ESA", "programme", "rover", "cancelled", 2008, 0, null, "images/mars/max-c/01-max-c-as-nasa-drew-it-for-the-decadal-survey-in.thumb.webp", 2, "Multinational", null, "2026-08-24"],
+  ["melos", "MELOS", "ISAS and JAXA (Japan)", "programme", "program", "cancelled", 2008, 0, null, "images/mars/melos/01-the-first-japanese-mars-aeroplane-the-airframe-d.thumb.webp", 4, "Japan", null, "2026-08-24"],
+  ["phoenix", "Phoenix", "NASA", "mission", "soft-lander", "ended", 2008, 1, null, "images/mars/phoenix/01-phoenix-photographed-its-own-solar-panel-and-its.thumb.webp", 7, "United States", [68.22, -125.75, 0], "2026-08-23"],
+  ["visions-of-mars", "Visions of Mars", "The Planetary Society, with IKI and NASA", "artefact", "artefact", "success", 2008, 1, null, "images/mars/visions-of-mars/01-the-disc-itself-photographed-on-earth-against-a.thumb.webp", 4, "Multinational", [68.22, -125.75, 0], "2026-08-24"],
+  ["phobos-grunt-yinghuo-1", "Phobos-Grunt and Yinghuo-1", "Roscosmos (Russia) and CNSA (China)", "mission", "sample-return", "failure", 2011, 0, null, "images/mars/phobos-grunt-yinghuo-1/01-the-zenit-on-the-pad-at-baikonur-on-the-night-of.thumb.webp", 7, "Multinational", null, "2026-08-23"],
+  ["red-dragon", "Red Dragon", "SpaceX with NASA Ames Research Center (United States)", "mission", "soft-lander", "cancelled", 2011, 0, null, "images/mars/red-dragon/01-entry-in-spacex-s-own-concept-art-red-dragon-was.thumb.webp", 4, "United States", null, "2026-08-24"],
+  ["curiosity", "Curiosity (Mars Science Laboratory)", "NASA", "mission", "rover", "operating", 2012, 1, null, "images/mars/curiosity/01-curiosity-on-vera-rubin-ridge-on-sol-1943-with-m.thumb.webp", 7, "United States", [-4.5895, 137.4416, 0], "2026-10-28"],
+  ["mars-one", "Mars One", "Mars One Foundation (Netherlands) and Mars One Ventures AG (Switzerland)", "programme", "program", "cancelled", 2012, 0, null, "images/mars/mars-one/01-the-2016-supply-landing-as-mars-one-drew-it-this.thumb.webp", 5, "Europe", null, "2026-08-24"],
+  ["inspiration-mars", "Inspiration Mars", "Inspiration Mars Foundation (United States)", "programme", "flyby", "cancelled", 2013, 0, null, "images/mars/inspiration-mars/01-the-vehicle-dennis-tito-proposed-a-capsule-bolte.thumb.webp", 4, "United States", null, "2026-08-24"],
+  ["mangalyaan", "Mars Orbiter Mission (Mangalyaan)", "ISRO", "mission", "orbiter", "ended", 2014, 0, null, "images/mars/mangalyaan/01-the-whole-planet-in-one-frame-mangalyaan-s-high.thumb.webp", 6, "India", null, "2026-09-24"],
+  ["maven", "MAVEN", "NASA", "mission", "orbiter", "ended", 2014, 0, null, "images/mars/maven/01-maven-s-solar-arrays-being-test-deployed-at-kenn.thumb.webp", 3, "United States", null, "2026-08-23"],
+  ["exomars-tgo", "ExoMars Trace Gas Orbiter", "ESA and Roscosmos", "mission", "orbiter", "operating", 2016, 0, null, "images/mars/exomars-tgo/01-real-hardware-twelve-days-before-launch-tgo-and.thumb.webp", 3, "Multinational", null, "2026-10-28"],
+  ["schiaparelli", "Schiaparelli EDM", "ESA", "mission", "soft-lander", "failure", 2016, 1, null, "images/mars/schiaparelli/01-six-days-after-the-crash-hirise-picks-out-the-im.thumb.webp", 3, "Europe", [-2.07, -6.21, 0], "2026-08-23"],
+  ["insight", "InSight", "NASA", "mission", "soft-lander", "ended", 2018, 1, null, "images/mars/insight/01-insight-ten-sols-after-landing-photographed-by-t.thumb.webp", 7, "United States", [4.502, 135.623, 0], "2026-08-23"],
+  ["marco-a-b", "MarCO A and B", "NASA", "mission", "flyby", "success", 2018, 0, null, "images/mars/marco-a-b/01-both-marco-cubesats-before-launch-one-folded-and.thumb.webp", 4, "United States", null, "2026-08-23"],
+  ["insight-mole", "The HP3 Mole", "DLR / NASA", "instrument", "penetrator", "failure", 2018, 1, null, "images/mars/insight-mole/01-hp3-under-test-in-a-german-cleanroom-before-laun.thumb.webp", 6, "Multinational", [4.502, 135.623, 0], "2026-08-27"],
+  ["mars-gravity-assists", "Mars gravity assists", "ESA and NASA", "programme", "flyby", "success", 2004, 0, null, "images/mars/mars-gravity-assists/01-philae-photographing-its-own-mothership-above-ma.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["mars-as-observatory", "Mars as an observatory", "NASA, ESA and CNSA", "programme", "program", "operating", 2013, 0, null, "images/mars/mars-as-observatory/01-comet-siding-spring-from-mars-orbit-on-19-octobe.thumb.webp", 7, "Multinational", null, "2026-08-24"],
+  ["kazachok", "Kazachok", "Roscosmos, with ESA", "mission", "soft-lander", "cancelled", 2015, 0, null, "images/mars/kazachok/01-kazachok-itself-ramps-and-solar-panels-folded-wi.thumb.webp", 5, "Multinational", null, "2026-08-27"],
+  ["i-mim", "International Mars Ice Mapper", "NASA, CSA, JAXA and ASI, later joined by the Netherlands Space Office", "mission", "orbiter", "cancelled", 2020, 0, null, "images/mars/i-mim/01-the-four-agency-ice-mapper-as-nasa-drew-it-in-20.thumb.webp", 3, "Multinational", null, "2026-08-24"],
+  ["msr-cancelled-vehicles", "The deleted Mars Sample Return vehicles", "NASA / ESA", "programme", "sample-return", "cancelled", 2020, 0, null, "images/mars/msr-cancelled-vehicles/01-the-sample-fetch-rover-as-it-actually-exists-a-f.thumb.webp", 6, "Multinational", null, "2026-08-24"],
+  ["tianwen-1-cameras", "Tianwen-1's deployable cameras", "CNSA", "instrument", "artefact", "success", 2020, 1, null, "images/mars/tianwen-1-cameras/01-the-photograph-a-camera-lying-on-the-ground-took.thumb.webp", 5, "China", [25.066, 109.925, 0], "2026-09-24"],
+  ["hope-emm", "Hope (Emirates Mars Mission)", "MBRSC and UAE Space Agency (United Arab Emirates)", "mission", "orbiter", "operating", 2021, 0, null, "images/mars/hope-emm/01-the-first-picture-taken-a-day-after-arrival-on-1.thumb.webp", 6, "United Arab Emirates", null, "2026-09-03"],
+  ["ingenuity", "Ingenuity", "NASA", "mission", "helicopter", "ended", 2021, 1, null, "images/mars/ingenuity/01-ingenuity-alone-on-mars-on-19-april-2021-photogr.thumb.webp", 7, "United States", [18.4973, 77.3225, 0], "2026-08-23"],
+  ["messages-to-mars", "Messages to Mars", "USSR, NASA, ESA and CNSA", "artefact", "artefact", "success", 2021, 1, null, "images/mars/messages-to-mars/03-the-one-message-made-for-mars-that-is-still-on-e.thumb.webp", 6, "Multinational", [18.4446, 77.4509, 0], "2026-08-24"],
+  ["perseverance", "Perseverance (Mars 2020)", "NASA", "mission", "rover", "operating", 2021, 1, null, "images/mars/perseverance/01-perseverance-and-cheyava-falls-the-pale-arrowhea.thumb.webp", 7, "United States", [18.4446, 77.4509, 0], "2026-10-26"],
+  ["send-your-name-to-mars", "Send Your Name to Mars", "NASA and The Planetary Society", "artefact", "artefact", "success", 2021, 1, null, "images/mars/send-your-name-to-mars/01-about-35-000-signatures-on-a-chip-the-size-of-a.thumb.webp", 5, "United States", [-14.5692, 175.4729, 0], "2026-08-24"],
+  ["mars-microphone", "The Mars Microphone", "The Planetary Society / NASA / CNES", "instrument", "artefact", "operating", 2021, 1, null, "images/mars/mars-microphone/01-the-flight-spare-of-the-1999-mars-microphone-abo.thumb.webp", 4, "Multinational", [18.4446, 77.4509, 0], "2026-08-27"],
+  ["tianwen-1", "Tianwen-1", "CNSA (China)", "mission", "orbiter", "operating", 2021, 0, null, "images/mars/tianwen-1/01-tianwen-1-photographed-by-a-camera-it-threw-away.thumb.webp", 7, "China", null, "2026-09-24"],
+  ["zhurong", "Zhurong", "CNSA (China)", "mission", "rover", "ended", 2021, 1, null, "images/mars/zhurong/01-the-portrait-zhurong-took-of-itself-the-rover-ca.thumb.webp", 7, "China", [25.066, 109.925, 0], "2026-09-24"],
+  ["three-forks-depot", "The Three Forks sample depot", "NASA", "artefact", "sample-depot", "operating", 2023, 1, null, "images/mars/three-forks-depot/01-the-whole-depot-one-tube-at-a-time-each-strip-is.thumb.webp", 5, "United States", [18.4529, 77.4082, 0], "2026-09-03"],
+  ["hera-deimos", "Hera at Deimos", "ESA", "mission", "flyby", "success", 2024, 0, null, "images/mars/hera-deimos/01-deimos-against-mars-from-about-1-000-km-seen-by.thumb.webp", 5, "Europe", null, "2026-08-24"],
+  ["escapade", "ESCAPADE", "NASA / UC Berkeley Space Sciences Laboratory / Rocket Lab", "mission", "orbiter", "operating", 2025, 0, null, "images/mars/escapade/01-blue-and-gold-the-two-identical-escapade-orbiter.thumb.webp", 3, "United States", null, "2026-10-28"],
+  ["idefix", "Idefix (MMX Phobos rover)", "CNES and DLR, flying with JAXA", "mission", "rover", "operating", 2026, 0, null, "images/mars/idefix/01-the-actual-flight-rover-folded-for-the-journey-a.thumb.webp", 6, "Multinational", null, "2026-10-28"],
+  ["mmx", "Martian Moons eXploration (MMX)", "JAXA", "mission", "sample-return", "operating", 2026, 0, null, "images/mars/mmx/01-photograph-h3-flight-10-climbs-into-the-night-sk.thumb.webp", 7, "Japan", null, "2026-10-28"],
+  ["mars-orbit-graveyard", "The derelict fleet in Mars orbit", "various", "site", "orbiter", "debris", 2026, 0, null, "images/mars/mars-orbit-graveyard/01-mariner-9-in-the-last-days-before-launch-may-197.thumb.webp", 5, "Multinational", null, "2026-08-24"],
+  ["descent-hardware", "What we left behind: parachutes, backshells and heat shields", "various", "artefact", "descent-hardware", "success", 2026, 1, null, "images/mars/descent-hardware/01-one-day-after-landing-everything-perseverance-sh.thumb.webp", 7, "Multinational", [18.465, 77.43, 0], "2026-08-23"],
+  ["fobos-grunt-2-boomerang", "Fobos-Grunt 2, Boomerang and Mars-Grunt", "Roscosmos", "programme", "program", "cancelled", 2012, 0, null, "images/mars/fobos-grunt-2-boomerang/01-boomerang-as-its-own-prime-contractor-draws-it-t.thumb.webp", 3, "Russia", null, "2026-08-27"],
+  ["mangalyaan-2", "Mangalyaan-2 (Mars Lander Mission)", "ISRO", "mission", "soft-lander", "planned", 2014, 0, null, "images/mars/mangalyaan-2/02-the-rocket-the-plan-calls-for-an-lvm3-leaving-sr.thumb.webp", 2, "India", null, "2026-08-24"],
+  ["china-crewed-mars", "China's crewed Mars plans", "CASC and CNSA (China)", "programme", "program", "planned", 2016, 0, null, "images/mars/china-crewed-mars/01-wang-xiaojun-giving-the-june-2021-report-that-is.thumb.webp", 2, "China", null, "2026-08-24"],
+  ["starship-mars", "Starship and Mars", "SpaceX", "programme", "program", "in-development", 2016, 0, null, "images/mars/starship-mars/01-spacex-s-own-render-of-a-spaceship-arriving-at-m.thumb.webp", 5, "United States", null, "2026-09-28"],
+  ["national-mars-ambitions", "National Mars ambitions", "MBRSC and the UAE Space Agency; KASA (South Korea); others", "programme", "program", "planned", 2017, 0, null, "images/mars/national-mars-ambitions/01-mars-science-city-as-proposed-for-the-desert-out.thumb.webp", 4, "Multinational", null, "2026-08-24"],
+  ["mars-science-helicopter", "Mars Science Helicopter and Chopper", "NASA JPL, NASA Ames and AeroVironment", "programme", "helicopter", "in-development", 2020, 0, null, "images/mars/mars-science-helicopter/01-mars-chopper-as-nasa-released-it-on-11-december.thumb.webp", 4, "United States", null, "2026-08-24"],
+  ["mars-life-explorer", "Mars Life Explorer", "NASA", "mission", "soft-lander", "planned", 2021, 0, null, "images/mars/mars-life-explorer/01-the-mars-life-explorer-as-drawn-for-the-concept.thumb.webp", 3, "United States", null, "2026-08-24"],
+  ["skyfall", "SkyFall", "NASA and AeroVironment", "mission", "helicopter", "in-development", 2021, 0, null, "images/mars/skyfall/01-the-whole-idea-in-one-frame-the-aircraft-are-let.thumb.webp", 3, "United States", null, "2026-09-05"],
+  ["impulse-relativity-lander", "The Impulse and Relativity Mars lander", "Impulse Space and Relativity Space", "mission", "soft-lander", "planned", 2022, 0, null, "images/mars/impulse-relativity-lander/01-impulse-space-s-2022-render-of-the-cruise-vehicl.thumb.webp", 2, "United States", null, "2026-08-24"],
+  ["cmps-mars-future-missions", "Commercial Mars Payload Services and Mars Future Missions", "NASA", "programme", "program", "in-development", 2023, 0, null, "images/mars/cmps-mars-future-missions/01-nasa-s-flight-path-diagram-for-sr-1-freedom-the.thumb.webp", 3, "United States", null, "2026-08-24"],
+  ["esa-lightship", "LightShip, SpotLight and MARCONI", "ESA", "programme", "program", "in-development", 2023, 0, null, "images/mars/esa-lightship/01-esa-s-artist-s-impression-of-the-lightship-tug-r.thumb.webp", 3, "Europe", null, "2026-08-24"],
+  ["mars-telecom-network", "Mars Telecommunications Network", "NASA", "programme", "orbiter", "in-development", 2025, 0, null, "images/mars/mars-telecom-network/01-the-relay-fleet-the-new-orbiter-is-meant-to-rein.thumb.webp", 3, "United States", null, "2026-08-24"],
+  ["aeolus-relativity", "Aeolus and the Relativity Mars orbiter", "NASA and Relativity Space", "mission", "orbiter", "in-development", 2026, 0, null, "images/mars/aeolus-relativity/01-relativity-space-s-own-render-of-the-spacecraft.thumb.webp", 2, "United States", null, "2026-08-24"],
+  ["mars-sample-return", "Mars Sample Return (NASA and ESA)", "NASA / ESA", "programme", "program", "cancelled", 2026, 0, null, "images/mars/mars-sample-return/01-the-tubes-are-still-lying-there-perseverance-s-p.thumb.webp", 3, "Multinational", null, "2026-09-03"],
+  ["humans-to-mars", "Sending people to Mars", "various", "programme", "program", "planned", 2026, 0, null, "images/mars/humans-to-mars/01-an-artist-s-concept-not-a-plan-nasa-s-2019-illus.thumb.webp", 2, "Multinational", null, "2026-09-28"],
+  ["sr-1-freedom", "Space Reactor-1 Freedom", "NASA", "mission", "flyby", "in-development", 2026, 0, null, "images/mars/sr-1-freedom/01-nasa-s-own-artist-s-concept-of-sr-1-freedom-pass.thumb.webp", 3, "United States", null, "2026-08-24"],
+  ["rosalind-franklin", "Rosalind Franklin rover", "ESA, with NASA", "mission", "rover", "in-development", 2028, 0, null, "images/mars/rosalind-franklin/01-the-rover-itself-under-construction-in-the-airbu.thumb.webp", 3, "Multinational", null, "2026-09-03"],
+  ["tianwen-3", "Tianwen-3 (天问三号)", "CNSA", "mission", "sample-return", "in-development", 2028, 0, null, "images/mars/tianwen-3/01-china-s-rendering-of-the-tianwen-3-orbiter-and-r.thumb.webp", 2, "China", null, "2026-09-24"],
 ];
+const ARCHIVE_BUILD = {"built": "2026-11-14", "moonPages": 78, "marsPages": 110, "moonJson": 73, "marsJson": 123, "images": 931, "imageFailures": 0, "sourceErrors": 0, "refs": 2548};
 
 // Справочные темы AZMTH (раздел /mars/learn): [slug, название, число источников на странице]
 const AZMTH_TOPICS = [
@@ -2506,12 +2587,12 @@ const UI = {
   ai: T('AI & SI disclosure', 'Использование ИИ', 'ЖИ қолдану туралы'),
   motto: T('They may have been abandoned by humanity, but they should never be forgotten.', 'Человечество оставило их, но забывать их нельзя.', 'Адамзат оларды тастап кетті, бірақ оларды ұмытуға болмайды.'),
   // заставка
-  labTitle: T('RealPugs Research Laboratory', 'Исследовательская лаборатория RealPugs', 'RealPugs зерттеу зертханасы'),
-  labSub: T('Abandoned but not forgotten: the machines humanity left on other worlds', 'Оставленные, но не забытые: машины, которые люди оставили на других мирах', 'Тастап кетілген, бірақ ұмытылмаған: адамдар басқа әлемдерде қалдырған машиналар'),
-  enter: T('Enter the archive', 'Войти в архив', 'Мұрағатқа кіру'), skip: T('Skip intro', 'Пропустить заставку', 'Заставканы өткізу'),
+  labTitle: T('VESTIGE', 'VESTIGE', 'VESTIGE'),
+  labSub: T('RealPugs research laboratory: a digital museum of humanity’s missions to the Moon and Mars', 'Исследовательская лаборатория RealPugs: цифровой музей человеческих миссий на Луне и Марсе', 'RealPugs зерттеу зертханасы: адамзаттың Ай мен Марсқа жасаған миссияларының цифрлық мұражайы'),
+  enter: T('Start the story tour', 'Начать рассказ', 'Әңгімені бастау'), skip: T('Skip intro', 'Пропустить заставку', 'Заставканы өткізу'),
   scanning: T('Scanning access…', 'Проверка доступа…', 'Рұқсат тексерілуде…'), granted: T('Access granted', 'Доступ открыт', 'Рұқсат берілді'),
-  monitorsHint: T('Open a screen, or enter the archive.', 'Откройте любой экран или войдите в архив.', 'Кез келген экранды ашыңыз немесе мұрағатқа кіріңіз.'),
-  centralCaption: T('The Moon and Mars, to scale', 'Луна и Марс в одном масштабе', 'Ай мен Марс бір масштабта'),
+  monitorsHint: T('Choose a world on the central screen to open its archive, or start the story tour.', 'Выберите мир на центральном экране, чтобы открыть его архив, или начните рассказ.', 'Мұрағатын ашу үшін орталық экраннан әлемді таңдаңыз немесе әңгімені бастаңыз.'),
+  centralCaption: T('Central screen: choose a world', 'Центральный экран: выберите мир', 'Орталық экран: әлемді таңдаңыз'),
   // страница миссии
   missionPage: T('Mission page', 'Страница миссии', 'Миссия беті'), openMission: T('Open mission page', 'Страница миссии', 'Миссия беті'),
   secOverview: T('Mission overview', 'Обзор миссии', 'Миссияға шолу'), secStory: T('Origin and story', 'Замысел и история', 'Идея және тарих'),
@@ -2609,9 +2690,9 @@ const UI = {
 
 /* ---------- Казахская версия текстов страницы (те же ключи, что в EN) ---------- */
 const KK = {
-  'skip': 'Мазмұнға өту', 'brand': 'Ұмытылған техника', 'menu.btn': 'Мәзір', 'f4.allrefs': 'Барлық дереккөз іздеумен', 'link.mission': 'Миссия беті', 'page.back': 'Әңгімеге оралу',
-  'nav.label': 'Бөлімдер', 'nav.intro': 'Басы', 'nav.moon': 'Ай', 'nav.mars': 'Марс', 'nav.finale': 'Қорытынды', 'lang.label': 'Тіл',
-  'intro.title': 'Ұмытылған техника',
+  'skip': 'Мазмұнға өту', 'menu.btn': 'Мәзір', 'f4.allrefs': 'Барлық дереккөз іздеумен', 'link.mission': 'Миссия беті', 'page.back': 'Әңгімеге оралу',
+  'nav.label': 'Бөлімдер', 'nav.intro': 'Басы', 'nav.moon': 'Ай', 'nav.mars': 'Марс', 'nav.finale': 'Қорытынды', 'nav.archive': 'Мұрағат', 'lang.label': 'Тіл',
+  'intro.title': 'VESTIGE',
   'intro.lede': 'Ай мен Марста әлдеқашан үнсіз қалған машиналар тұр. Олардың кейбірі ғалымдарға әлі де көмектеседі. Төмен айналдырыңыз — олар өздері туралы өздері айтып береді.',
   'intro.meta': 'Екі тарау, картада 16 нүкте және викторина — шамамен 10 минут. Ай мен Марс бір масштабта көрсетілген: Марс екі есеге жуық үлкен.',
   'intro.cue': 'Төмен айналдырыңыз',
@@ -2711,7 +2792,7 @@ const EN_PATCH = {
 };
 
 const STR_KK = {
-  title: 'Ұмытылған техника — Ай мен Марста қалған машиналар',
+  title: 'VESTIGE — Ай мен Марс миссияларының мұражайы',
   listen: 'Тыңдау', stop: 'Тоқтату', science: 'Ғылымға берген пайдасы.', prev: 'Артқа', next: 'Келесі', close: 'Жабу',
   silent: 'Үнсіз', passive: 'Үнсіз, бірақ ғылымға әлі қызмет етеді', active: 'Жұмыс істейді',
   count: '{i} / {n}', N: 'с. е.', S: 'о. е.', E: 'ш. б.', W: 'б. б.',
@@ -2835,8 +2916,8 @@ const ASSETS = {
 
   // Фотографии в карточках. caption — подпись под фото (укажите автора снимка).
   photos: {
-    lunokhod1:   { src: 'images/lunokhod1.jpg',   caption: { ru: 'Луноход-1.', en: 'Lunokhod 1.' } },     // ← фото Лунохода-1
-    opportunity: { src: 'images/opportunity.jpg', caption: { ru: 'Opportunity.', en: 'Opportunity.' } },   // ← фото Opportunity
+    lunokhod1:   { src: 'images/moon/luna-17-lunokhod-1/lunokhod-1-in-memorial-museum-of-cosmonautics-02.webp', caption: { ru: 'Луноход-1, музейная модель (Мемориальный музей космонавтики, Москва). Фото: Vitaly V. Kuzmin, CC BY-SA 4.0, Wikimedia Commons; копия уменьшена.', en: 'Lunokhod 1, museum model (Memorial Museum of Cosmonautics, Moscow). Photo: Vitaly V. Kuzmin, CC BY-SA 4.0, via Wikimedia Commons; resized.', kk: 'Луноход-1, мұражай моделі (Мәскеудегі Ғарышкерлік мемориалдық мұражайы). Фото: Vitaly V. Kuzmin, CC BY-SA 4.0, Wikimedia Commons; кішірейтілген.' } },
+    opportunity: { src: 'images/mars/opportunity/01-opportunity-photographing-itself-in-january-2014.webp', caption: { ru: 'Автопортрет Opportunity, январь 2014 года (PIA17759). NASA/JPL-Caltech/Cornell Univ./Arizona State Univ.', en: 'Opportunity’s self-portrait, January 2014 (PIA17759). NASA/JPL-Caltech/Cornell Univ./Arizona State Univ.', kk: 'Opportunity автопортреті, 2014 жылғы қаңтар (PIA17759). NASA/JPL-Caltech/Cornell Univ./Arizona State Univ.' } },
   },
 };
 
@@ -2992,11 +3073,10 @@ QUIZ.forEach((item, i) => { const k = QUIZ_KK[i]; item.q.kk = k.q; item.a.forEac
    ===================================================================================== */
 const EN = {
   'skip': 'Skip to content',
-  'brand': 'Forgotten Machines',
-  'nav.label': 'Sections', 'nav.intro': 'Start', 'nav.moon': 'Moon', 'nav.mars': 'Mars', 'nav.finale': 'Wrap-up',
+  'nav.label': 'Sections', 'nav.intro': 'Start', 'nav.moon': 'Moon', 'nav.mars': 'Mars', 'nav.finale': 'Wrap-up', 'nav.archive': 'Archive',
   'lang.label': 'Language',
 
-  'intro.title': 'Forgotten Machines',
+  'intro.title': 'VESTIGE',
   'intro.lede': 'Machines that fell silent long ago still stand on the Moon and Mars. Some of them are still helping scientists. Scroll down and let them tell you their own stories.',
   'intro.meta': 'Two chapters, 15 places on the map and a quiz: about 10 minutes. The Moon and Mars are shown to the same scale; Mars is almost twice as wide.',
   'intro.cue': 'Scroll down',
@@ -3149,7 +3229,7 @@ const EN = {
 
 const STR = {
   ru: {
-    title: 'Забытая техника — машины, которые остались на Луне и Марсе',
+    title: 'VESTIGE — музей миссий на Луне и Марсе',
     listen: 'Слушать', stop: 'Стоп', science: 'Что это дало науке.', prev: 'Назад', next: 'Дальше', close: 'Закрыть',
     silent: 'Молчит', passive: 'Молчит, но ещё служит науке', active: 'Работает',
     count: '{i} из {n}', N: 'с. ш.', S: 'ю. ш.', E: 'в. д.', W: 'з. д.',
@@ -3166,7 +3246,7 @@ const STR = {
     isRight: 'верный ответ', isYours: 'ваш ответ',
   },
   en: {
-    title: 'Forgotten Machines: the hardware left on the Moon and Mars',
+    title: 'VESTIGE: a museum of the missions to the Moon and Mars',
     listen: 'Listen', stop: 'Stop', science: 'What science gained.', prev: 'Back', next: 'Next', close: 'Close',
     silent: 'Silent', passive: 'Silent, but still useful to science', active: 'Working',
     count: '{i} of {n}', N: 'N', S: 'S', E: 'E', W: 'W',
@@ -3503,7 +3583,11 @@ function stopSpeech() {
 function initSpeech() {
   if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
   const synth = window.speechSynthesis;
-  const voiceFor = () => synth.getVoices().find(v => v.lang.toLowerCase().startsWith(state.lang));
+  const voiceFor = () => {
+    const list = synth.getVoices().filter(v => v.lang.toLowerCase().replace('_', '-').startsWith(state.lang));
+    return list.find(v => /natural|neural|online|google|premium|enhanced/i.test(v.name)) || list.find(v => v.localService) || list[0] || null;   // сначала более качественные голоса
+  };
+  synth.getVoices(); synth.addEventListener?.('voiceschanged', () => synth.getVoices(), { signal: ac.signal });   // список голосов приходит не сразу
   $$('.speak').forEach(btn => {
     btn.hidden = false; btn.setAttribute('aria-pressed', 'false');
     on(btn, 'click', () => {
@@ -3514,6 +3598,7 @@ function initSpeech() {
       const say = el => { const c = el.cloneNode(true); c.querySelectorAll('.cites, [data-refs]').forEach(n => n.remove()); return c.textContent.trim(); };   // номера сносок не читаем
       const parts = $$('h3, h4, p, dt, dd', plate).filter(el => !el.closest('.no-say, svg, button, figure')).map(say).filter(Boolean);
       const voice = voiceFor();
+      if (!voice && state.lang === 'kk' && !plate.querySelector('.voice-note')) btn.insertAdjacentHTML('afterend', `<p class="voice-note no-say mt-2 text-[0.8125rem] text-dim">${esc(ui('noKkVoice'))}</p>`);
       speaking = btn; btn.setAttribute('aria-pressed', 'true');
       btn.querySelector('[data-str]').dataset.str = 'stop'; btn.querySelector('[data-str]').textContent = t('stop');
       parts.forEach((text, i) => {
@@ -4321,6 +4406,7 @@ async function init3D() {
     destroy,
     pause,
     loadAsset: id => loadAny(assetUrls(id)),   // загрузить модель из реестра (для 3D-просмотра на странице миссии)
+    paintPlanet,                               // нарисованная кодом поверхность (для глобусов на заставке)
     // выбрать точку: повернуть к ней планету (или снять выбор, если id пустой)
     select(id) {
       const site = SITE[id];
@@ -4450,8 +4536,9 @@ const ROUTES = {};
 function parseRoute() {
   const h = location.hash;
   if (!h.startsWith('#/')) return null;
-  const [name = 'missions', arg = null] = h.slice(2).split('/').filter(Boolean).map(decodeURIComponent);
-  return { name, arg };
+  const [path, query = ''] = h.slice(2).split('?');
+  const [name = 'missions', ...rest] = path.split('/').filter(Boolean).map(decodeURIComponent);
+  return { name, arg: rest.join('/') || null, query: new URLSearchParams(query) };   // #/missions/mars/viking-1, #/missions?planet=moon
 }
 function route() {
   const r = parseRoute();
@@ -4465,6 +4552,7 @@ function route() {
   }
   const render = ROUTES[r.name];
   if (!render) { history.replaceState(null, '', location.pathname + location.search); closePage(false); return; }
+  if (r.name === 'missions' && !r.arg && ['moon', 'mars'].includes(r.query.get('planet'))) Object.assign(archState, { q: '', planet: r.query.get('planet'), kind: '', status: '', type: '', nation: '', group: '', from: '', to: '', still: false });
   openPage(r, render);
 }
 function openPage(r, render) {
@@ -4502,7 +4590,7 @@ function closePage(clearHash = true) {
 }
 on(window, 'hashchange', route);
 on($('#page-close'), 'click', () => closePage(true));
-on(document, 'keydown', e => { if (e.key === 'Escape' && !pageEl.hidden && !document.fullscreenElement) closePage(true); });
+on(document, 'keydown', e => { if (e.key === 'Escape' && !pageEl.hidden && !document.fullscreenElement && !$('#lightbox')?.open) closePage(true); });
 
 /* ---------- Меню ---------- */
 const menuBtn = $('#menu-btn'), menuPanel = $('#menu-panel');
@@ -4511,7 +4599,7 @@ on(menuBtn, 'click', () => { const open = menuPanel.hidden; menuPanel.hidden = !
 on(document, 'click', e => { if (!menuPanel.hidden && !menuPanel.contains(e.target) && !menuBtn.contains(e.target)) closeMenu(); });
 on(document, 'keydown', e => { if (e.key === 'Escape' && !menuPanel.hidden) { closeMenu(); menuBtn.focus(); } });
 function renderMenu() {
-  const links = [['#/explore/moon', 'moon'], ['#/explore/mars', 'mars'], ['#/missions', 'missions'], ['#/timeline', 'timeline'], ['#/research', 'research'], ['#/references', 'references'], ['#/about', 'about'], ['#/challenge', 'challenge'], ['#/credits', 'credits'], ['#/open-source', 'openSource'], ['#/ai-disclosure', 'ai']];
+  const links = [['#/missions', 'missions'], ['#/missions?planet=moon', 'labMoon'], ['#/missions?planet=mars', 'labMars'], ['#/explore/moon', 'tourMoon'], ['#/explore/mars', 'tourMars'], ['#/timeline', 'timeline'], ['#/research', 'research'], ['#/references', 'references'], ['#/impact', 'impact'], ['#/about', 'about'], ['#/challenge', 'challenge'], ['#/credits', 'credits'], ['#/open-source', 'openSource'], ['#/ai-disclosure', 'ai']];
   $('#menu-links').innerHTML = links.map(([href, k]) => `<a class="menu-link" href="${href}">${esc(ui(k))}</a>`).join('');
   $$('#menu-links a').forEach(a => on(a, 'click', closeMenu));
 }
@@ -4524,7 +4612,7 @@ function statusBadges(m) {
   return [badge(`o-${m.outcome}`, `${ui('fOutcome')}: ${LT(UI.outcome[m.outcome])}`), badge('neutral', LT(UI.op[m.op])), badge('neutral', LT(UI.phys[m.phys])), m.still ? badge('still', ui('still')) : ''].join('');
 }
 function textWithRefs([text, refs]) { return `${esc(LT(text))}${cites(refs)}`; }
-ROUTES.missions = arg => arg ? missionPage(arg) : archivePage();
+ROUTES.missions = arg => !arg ? archivePage() : MISSION[arg] ? missionPage(arg) : catalogPage(arg);
 function missionPage(id) {
   const m = MISSION[id];
   if (!m) return `<h1 class="page-h1">${esc(ui('missions'))}</h1><p>${esc(ui('noMatches'))}</p>`;
@@ -4569,7 +4657,7 @@ function missionPage(id) {
     <section aria-labelledby="sov"><h2 id="sov" class="sec-h">${esc(ui('secOverview'))}</h2><dl class="facts-dl">${dl.map(([k, v]) => `<div><dt>${esc(ui(k))}</dt><dd>${v}</dd></div>`).join('')}</dl></section>
   </div>
   <section aria-labelledby="sst"><h2 id="sst" class="sec-h">${esc(ui('secStory'))}</h2><div class="prose">${story}<p><b class="accent">${esc(ui('fObjective'))}.</b> ${esc(LT(m.obj))}</p></div>
-    <figure class="img-missing"><svg viewBox="0 0 48 36" aria-hidden="true"><rect x="2" y="2" width="44" height="32" rx="3"/><circle cx="16" cy="13" r="4"/><path d="M6 30l12-11 8 7 6-5 10 9"/><path d="M4 4l40 28"/></svg><figcaption>${esc(ui('imgMissing'))}</figcaption></figure></section>
+    ${m.azmth ? `<div data-gallery="${esc(`${m.planet}/${AZMTH_SLUG[m.id] || m.id}`)}"></div>` : ''}</section>
   <section aria-labelledby="stl"><h2 id="stl" class="sec-h">${esc(ui('secTimeline'))}</h2><ol class="tl">${m.tl.map(([d, txt, ref]) => `<li><time>${esc(fmtDate(d))}</time><span>${esc(LT(txt))}${cites([ref])}</span></li>`).join('')}</ol></section>
   <section aria-labelledby="sim"><h2 id="sim" class="sec-h">${esc(ui('secImpact'))}</h2>
     <div class="impact">${IMP.map(([k, label]) => `<div class="impact-card"><h3>${esc(ui(label))}</h3><p>${m.imp[k] ? textWithRefs(m.imp[k]) : `<span class="text-dim">${esc(ui('noDoc'))}</span>`}</p></div>`).join('')}</div>
@@ -4587,6 +4675,7 @@ function missionPage(id) {
   <section aria-labelledby="sre"><h2 id="sre" class="sec-h">${esc(ui('secRefs'))}</h2>
     <p class="text-[0.875rem] text-dim">${esc(ui('refsOf', { n: refs.length }))} · <a href="#/references?m=${esc(m.id)}" data-refs-filter="${esc(m.id)}">${esc(ui('allRefs'))}</a></p>
     ${groups}</section>
+  ${(q => q ? quizBlock(q) : '')(archRecords().find(x => !x.mission && x.featured === m.id))}
   <nav class="pager"><a class="btn" href="#/missions/${prev.id}">← ${esc(LT(prev.name))}</a><a class="btn" href="#/missions/${next.id}">${esc(LT(next.name))} →</a></nav></div>`;
 }
 function refItem(r) {
@@ -4707,36 +4796,45 @@ let ARCH = null;
 function archRecords() {
   if (ARCH) return ARCH;
   ARCH = [];
-  for (const [slug, name, op, nation, type, status, year, reached, path] of ARCHIVE_MOON) {
-    ARCH.push({ planet: 'moon', slug, name, op, nation, type, status: normStatus(status), rawStatus: status, year, kind: type === 'program' ? 'programme' : type === 'debris' ? 'artefact' : 'mission', still: !!reached, url: `https://azmth.space${path || `/moon/missions/${slug}`}`, featured: featuredBySlug[`moon:${slug}`], ref: `azmth:moon:${slug}` });
+  for (const [slug, name, op, nation, type, status, year, reached, path, thumb, imgs, , coords, checked] of ARCHIVE_MOON) {
+    ARCH.push({ planet: 'moon', slug, name, op, nation, thumb, imgs, coords, checked, reached: !!reached, type, status: normStatus(status), rawStatus: status, year, kind: type === 'program' ? 'programme' : type === 'debris' ? 'artefact' : 'mission', still: !!reached, url: `https://azmth.space${path || `/moon/missions/${slug}`}`, featured: featuredBySlug[`moon:${slug}`], ref: `azmth:moon:${slug}` });
   }
-  for (const [slug, name, op, kind, type, status, year, coords, path] of ARCHIVE_MARS) {
+  for (const [slug, name, op, kind, type, status, year, coords, path, thumb, imgs, nation, site, checked] of ARCHIVE_MARS) {
     const st = normStatus(status);
-    ARCH.push({ planet: 'mars', slug, name, op, nation: '', type, status: st, rawStatus: status, year, kind, still: !!coords && ['mission', 'artefact', 'instrument'].includes(kind) && !['cancelled', 'planned', 'development'].includes(st), url: `https://azmth.space${path || `/mars/missions/${slug}`}`, featured: featuredBySlug[`mars:${slug}`], ref: `azmth:mars:${slug}` });
+    ARCH.push({ planet: 'mars', slug, name, op, nation: nation || '', thumb, imgs, coords: site, checked, reached: !!coords, type, status: st, rawStatus: status, year, kind, still: !!coords && ['mission', 'artefact', 'instrument'].includes(kind) && !['cancelled', 'planned', 'development'].includes(st), url: `https://azmth.space${path || `/mars/missions/${slug}`}`, featured: featuredBySlug[`mars:${slug}`], ref: `azmth:mars:${slug}` });
   }
   for (const m of MISSIONS.filter(x => !x.azmth)) ARCH.push({ planet: m.planet, slug: m.id, name: null, mission: m, op: m.agency, nation: m.country, type: m.type, status: m.outcome, year: Number(m.launch.slice(0, 4)), kind: 'mission', still: m.still, url: null, featured: m.id });
-  for (const r of ARCH) { r.group = agencyGroupOf(`${r.op} ${r.nation}`); r.tgroup = r.kind === 'instrument' ? 'instrument' : TYPE_GROUP[r.type] || 'other'; }
+  const NAT_KEY = { USA: 'United States', USSR: 'Soviet Union', 'Europe (ESA)': 'Europe' };
+  for (const r of ARCH) {
+    r.group = agencyGroupOf(`${r.op} ${r.nation}`); r.tgroup = r.kind === 'instrument' ? 'instrument' : TYPE_GROUP[r.type] || 'other';
+    r.nation = NAT_KEY[r.nation] || r.nation;
+    r.href = r.featured ? `#/missions/${r.featured}` : `#/missions/${r.planet}/${r.slug}`;   // у каждой записи каталога — своя страница
+  }
   return ARCH;
 }
 const recName = r => r.mission ? LT(r.mission.name) : r.featured && r.featured === r.slug ? LT(MISSION[r.featured].name) : r.name;   // у записи каталога — её собственное название
 const statusLabel = s => LT(UI.st[s]) || LT(UI.outcome[s]) || s;
 const typeLabel = ty => LT(UI.aType[ty]) || LT(UI.types[ty]) || ty;
 const opt = (v, label, sel) => `<option value="${esc(v)}"${v === sel ? ' selected' : ''}>${esc(label)}</option>`;
-const archState = { q: '', planet: '', kind: '', status: '', type: '', decade: '', still: false, sort: 'year' };
+const archState = { q: '', planet: '', kind: '', status: '', type: '', nation: '', group: '', from: '', to: '', still: false, sort: 'year' };
 function archivePage() {
   const recs = archRecords(), moon = recs.filter(r => r.planet === 'moon' && !r.mission).length, mars = recs.filter(r => r.planet === 'mars' && !r.mission).length;
-  const decades = [...new Set(recs.filter(r => r.year).map(r => Math.floor(r.year / 10) * 10))].sort();
-  const s = archState;
+  const nations = [...new Set(recs.map(r => r.nation).filter(Boolean))].sort((a, b) => nationName(a).localeCompare(nationName(b), LOCALES[state.lang]));
+  const s = archState, B = ARCHIVE_BUILD;
   return `<h1 class="page-h1">${esc(ui('archTitle'))}</h1>
   <p class="lead">${esc(ui('archIntro'))}</p>
   <p class="text-[0.875rem] text-dim">${esc(ui('archCounts', { moon, mars }))}</p>
+  <p class="text-[0.875rem] text-dim">${esc(ui('archBuild', { built: fmtDate(B.built), pages: B.moonPages + B.marsPages, total: moon + mars, images: B.images, fail: B.imageFailures, err: B.sourceErrors }))}</p>
   <form class="filters" id="arch-form" role="search" onsubmit="return false">
     <label class="f-wide"><span>${esc(ui('search'))}</span><input type="search" name="q" value="${esc(s.q)}" placeholder="${esc(ui('searchPh'))}"></label>
     <label><span>${esc(ui('fPlanet'))}</span><select name="planet">${opt('', ui('all'), s.planet)}${opt('moon', ui('moon'), s.planet)}${opt('mars', ui('mars'), s.planet)}${opt('other', T('Other worlds', 'Другие миры', 'Басқа әлемдер')[state.lang], s.planet)}</select></label>
     <label><span>${esc(ui('fRecord'))}</span><select name="kind">${opt('', ui('all'), s.kind)}${Object.keys(UI.rec).map(k => opt(k, LT(UI.rec[k]), s.kind)).join('')}</select></label>
     <label><span>${esc(ui('fStatus'))}</span><select name="status">${opt('', ui('all'), s.status)}${['success', 'partial', 'failure', 'cancelled', 'planned', 'development', 'operating', 'ended', 'debris'].map(k => opt(k, statusLabel(k), s.status)).join('')}</select></label>
     <label><span>${esc(ui('fType'))}</span><select name="type">${opt('', ui('all'), s.type)}${Object.keys(UI.types).map(k => opt(k, LT(UI.types[k]), s.type)).join('')}</select></label>
-    <label><span>${esc(ui('fDecade'))}</span><select name="decade">${opt('', ui('all'), s.decade)}${decades.map(d => opt(String(d), decadeLabel(d), s.decade)).join('')}</select></label>
+    <label><span>${esc(ui('fNation'))}</span><select name="nation">${opt('', ui('all'), s.nation)}${nations.map(n => opt(n, nationName(n), s.nation)).join('')}</select></label>
+    <label><span>${esc(ui('fGroup'))}</span><select name="group">${opt('', ui('all'), s.group)}${['NASA', 'USSR', 'ESA', 'China', 'India', 'Japan', 'Other'].map(g => opt(g, LT(UI.agencyGroup[g]), s.group)).join('')}</select></label>
+    <label><span>${esc(ui('fYearFrom'))}</span><input type="number" name="from" inputmode="numeric" min="1957" max="2040" value="${esc(s.from)}"></label>
+    <label><span>${esc(ui('fYearTo'))}</span><input type="number" name="to" inputmode="numeric" min="1957" max="2040" value="${esc(s.to)}"></label>
     <label><span>${esc(ui('sortBy'))}</span><select name="sort">${[['year', 'sortYear'], ['name', 'sortName'], ['status', 'sortStatus'], ['agency', 'sortAgency']].map(([v, k]) => opt(v, ui(k), s.sort)).join('')}</select></label>
     <label class="f-check"><input type="checkbox" name="still"${s.still ? ' checked' : ''}> <span>${esc(ui('fStill'))}</span></label>
     <button type="reset" class="btn btn-sm">${esc(ui('resetFilters'))}</button>
@@ -4747,25 +4845,25 @@ function archivePage() {
   <p class="text-[0.8125rem] text-dim">${esc(ui('azmthAttr'))}${cites(['azmth-moon-data', 'azmth-mars-data'])}</p>`;
 }
 function paintArchive() {
-  const s = archState, q = s.q.trim().toLowerCase();
+  const s = archState, q = s.q.trim().toLowerCase(), from = Number(s.from) || 0, to = Number(s.to) || 9999;
   let list = archRecords().filter(r =>
     (!s.planet || (s.planet === 'other' ? !['moon', 'mars'].includes(r.planet) : r.planet === s.planet)) && (!s.kind || r.kind === s.kind) && (!s.status || r.status === s.status) &&
-    (!s.type || r.tgroup === s.type) && (!s.decade || (r.year && Math.floor(r.year / 10) * 10 === Number(s.decade))) && (!s.still || r.still) &&
-    (!q || [recName(r), r.op, r.nation, r.year, typeLabel(r.type), statusLabel(r.status), LT(UI.rec[r.kind]), r.featured ? LT(MISSION[r.featured].obj) : ''].join(' ').toLowerCase().includes(q)));
+    (!s.type || r.tgroup === s.type) && (!s.nation || r.nation === s.nation) && (!s.group || r.group === s.group) && ((!s.from && !s.to) || (r.year && r.year >= from && r.year <= to)) && (!s.still || r.still) &&
+    (!q || [recName(r), r.op, r.nation, nationName(r.nation), r.year, typeLabel(r.type), statusLabel(r.status), LT(UI.rec[r.kind]), r.featured ? LT(MISSION[r.featured].obj) : ''].join(' ').toLowerCase().includes(q)));
   const by = { year: (a, b) => (a.year ?? 9999) - (b.year ?? 9999) || (a.name || recName(a)).localeCompare(b.name || recName(b)), name: (a, b) => recName(a).localeCompare(recName(b), LOCALES[state.lang]), status: (a, b) => statusLabel(a.status).localeCompare(statusLabel(b.status)) || (a.year ?? 9999) - (b.year ?? 9999), agency: (a, b) => String(a.op).localeCompare(String(b.op)) || (a.year ?? 9999) - (b.year ?? 9999) }[s.sort];
   list.sort(by);
   $('#arch-count').textContent = ui('matches', { n: list.length, total: archRecords().length });
   $('#arch-list').innerHTML = list.length ? list.map(r => `<li class="arch-row">
-      <span class="arch-year">${r.year ?? '—'}</span>
-      <span class="arch-main"><span class="arch-name">${r.featured ? `<a href="#/missions/${r.featured}">${esc(recName(r))}</a>` : `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(recName(r))}</a>`}</span>
-        <span class="arch-meta">${esc(planetName(r.planet))} · ${esc(r.op)} · ${esc([...new Set([typeLabel(r.type), LT(UI.rec[r.kind])])].join(' · '))}</span></span>
+      ${r.thumb ? `<img class="arch-thumb" src="${esc(r.thumb)}" alt="" width="112" height="76" loading="lazy" decoding="async">` : `<span class="arch-thumb none" aria-hidden="true">—</span>`}
+      <span class="arch-main"><span class="arch-name"><a href="${esc(r.href || `#/missions/${r.featured}`)}">${esc(recName(r))}</a></span>
+        <span class="arch-meta">${r.year ?? '—'} · ${esc(planetName(r.planet))} · ${esc(r.op)}${r.nation ? ` · ${esc(nationName(r.nation))}` : ''} · ${esc([...new Set([typeLabel(r.type), LT(UI.rec[r.kind])])].join(' · '))}${r.imgs ? ` · ${esc(ui('photos', { n: r.imgs }))}` : ''}</span></span>
       <span class="arch-tags">${badge(`s-${r.status}`, statusLabel(r.status))}${r.still ? badge('still', ui('still')) : ''}${r.featured ? badge('feat', ui('featured')) : ''}${r.url ? `<a class="arch-src" href="${esc(r.url)}" target="_blank" rel="noopener" title="${esc(ui('azmthPage'))}">AZMTH ↗</a>` : ''}</span></li>`).join('') : `<li class="text-dim">${esc(ui('noMatches'))}</li>`;
 }
 function wireFilters(formId, st, paint) {
   const form = $(formId); if (!form) return;
   const read = () => { for (const el of form.elements) if (el.name) st[el.name] = el.type === 'checkbox' ? el.checked : el.value; paint(); };
   form.addEventListener('input', read); form.addEventListener('change', read);
-  form.addEventListener('reset', () => setTimeout(read, 0));
+  form.addEventListener('reset', () => setTimeout(() => { for (const el of form.elements) { if (el.type === 'checkbox') el.checked = false; else if (el.tagName === 'SELECT') el.selectedIndex = 0; else if (el.name) el.value = ''; } read(); }, 0));   // сброс — к пустым фильтрам, а не к тем, с которыми открыли страницу
   paint();
 }
 
@@ -4827,7 +4925,7 @@ function paintTimeline() {
     const d = Math.floor(r.year / 10) * 10;
     if (d !== dec) { if (dec !== null) html += '</ol>'; html += `<h2 class="tl-dec">${esc(decadeLabel(d))}</h2><ol class="tl tl-wide">`; dec = d; }
     const links = r.featured ? INFLUENCE.filter(x => x[0] === r.featured).map(([, to, ref]) => `<a href="#/missions/${to}">→ ${esc(LT(MISSION[to].name))}</a>${cites([ref])}`).join(' ') : '';
-    html += `<li class="${r.featured ? 'is-feat' : ''}"><time>${r.year}</time><span><b>${r.featured ? `<a href="#/missions/${r.featured}">${esc(recName(r))}</a>` : `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(recName(r))}</a>`}</b> <span class="text-dim">· ${esc(planetName(r.planet))} · ${esc(r.op)}</span> ${badge(`s-${r.status}`, statusLabel(r.status))}${r.still ? badge('still', ui('still')) : ''}${links ? `<br><span class="tl-links">${esc(ui('influenced'))}: ${links}</span>` : ''}</span></li>`;
+    html += `<li class="${r.featured ? 'is-feat' : ''}"><time>${r.year}</time><span><b><a href="${esc(r.href || `#/missions/${r.featured}`)}">${esc(recName(r))}</a></b> <span class="text-dim">· ${esc(planetName(r.planet))} · ${esc(r.op)}</span> ${badge(`s-${r.status}`, statusLabel(r.status))}${r.still ? badge('still', ui('still')) : ''}${links ? `<br><span class="tl-links">${esc(ui('influenced'))}: ${links}</span>` : ''}</span></li>`;
   }
   if (dec !== null) html += '</ol>';
   $('#tl-list').innerHTML = html || `<p class="text-dim">${esc(ui('noMatches'))}</p>`;
@@ -4866,8 +4964,12 @@ ROUTES.about = () => `<h1 class="page-h1">${esc(ui('about'))}</h1>
   <div class="prose">${P(esc(T('Team RealPugs built this interactive museum for the 2026 NASA Space Apps Challenge. It tells the stories of the machines humanity sent to the Moon, Mars and beyond — many of them still standing where they stopped.', 'Команда RealPugs создала этот интерактивный музей для NASA Space Apps Challenge 2026. Он рассказывает о машинах, которые люди отправили на Луну, Марс и дальше; многие из них до сих пор стоят там, где остановились.', 'RealPugs командасы бұл интерактивті мұражайды NASA Space Apps Challenge 2026 үшін жасады. Ол адамдар Айға, Марсқа және одан әрі жіберген машиналар туралы айтады; олардың көбі әлі тоқтаған жерінде тұр.')[state.lang]),
     esc(T('Why remember them? Each spacecraft holds years of work by engineers and scientists, public money and human curiosity — and many of them still help science today.', 'Зачем их помнить? В каждом аппарате — годы работы инженеров и учёных, общественные деньги и человеческое любопытство, а многие из них до сих пор помогают науке.', 'Оларды неге есте сақтау керек? Әр аппаратта инженерлер мен ғалымдардың көп жылдық еңбегі, қоғамның қаражаты және адамның қызығушылығы бар, ал олардың көбі әлі күнге ғылымға көмектеседі.')[state.lang]),
     esc(T('Educational mission: help students aged 10 and up see how engineering choices led to scientific discoveries, with every fact traceable to an original source.', 'Образовательная цель: помочь школьникам от 10 лет увидеть, как инженерные решения приводили к научным открытиям, и проверить каждый факт по исходному источнику.', 'Білім беру мақсаты: 10 жастан асқан оқушыларға инженерлік шешімдердің ғылыми жаңалықтарға қалай әкелгенін көрсету және әр деректі түпнұсқа дереккөзден тексеруге мүмкіндік беру.')[state.lang]))}</div>
-  <h2 class="sec-h">${esc(T('Team members', 'Участники команды', 'Команда мүшелері')[state.lang])}</h2>
-  <p class="notice">${esc(T('Names, roles, verified short biographies and real team photos are added by Team RealPugs. Nothing about the team members is invented on this page.', 'Имена, роли, проверенные краткие биографии и настоящие фотографии добавляет команда RealPugs. Ничего о людях на этой странице не выдумано.', 'Аттарды, рөлдерді, тексерілген қысқаша өмірбаяндар мен нақты фотосуреттерді RealPugs командасы қосады. Бұл бетте адамдар туралы ештеңе ойдан шығарылмаған.')[state.lang])}</p>`;
+  <div class="about-head"><img src="${TEAM_LOGO}" alt="${esc(ui('teamLogoCap'))}" width="88" height="88"><div><b class="font-display text-[1.375rem]">RealPugs</b><br><span class="text-dim">VESTIGE · NASA Space Apps Challenge 2026</span></div></div>
+  <h2 class="sec-h">${esc(ui('teamH'))}</h2>
+  ${teamCards()}
+  <div class="impact-split">${teamPhoto()}<div><div class="prose">${P(esc(LT(IMPACT_TEXT.cards[0][1])), esc(LT(IMPACT_TEXT.cards[3][1])))}</div>
+  <p class="mt-4 flex flex-wrap gap-2"><a class="btn" href="${TEAM_URL}" target="_blank" rel="noopener">${esc(ui('teamOfficial'))} ↗</a><a class="btn" href="#/impact">${esc(ui('impact'))}</a></p></div></div>
+  <blockquote class="motto">${esc(ui('motto'))}</blockquote>`;
 ROUTES.challenge = () => `<h1 class="page-h1">${esc(ui('challenge'))}</h1>
   <div class="prose">${P(`${esc(T('The 2026 NASA Space Apps Challenge takes place on 14–15 November 2026 under the theme “The Next Frontier”. Project submission closes at 11:59 PM local time on 15 November.', 'NASA Space Apps Challenge 2026 проходит 14–15 ноября 2026 года под темой «Следующий рубеж» (The Next Frontier). Приём проектов закрывается 15 ноября в 23:59 по местному времени.', 'NASA Space Apps Challenge 2026 2026 жылғы 14–15 қарашада «Келесі шекара» (The Next Frontier) тақырыбымен өтеді. Жобаларды қабылдау 15 қарашада жергілікті уақытпен 23:59-да жабылады.')[state.lang])}${cites(['spaceapps2026', 'spaceapps-faq'])}`,
     esc(T('Our challenge asks for a story-driven educational experience about the hardware left on the Moon, Mars and elsewhere: what these machines are, why they were sent, and what they discovered — with a clear link between engineering and science, and accuracy throughout.', 'Наша задача — создать основанный на истории образовательный проект о технике, оставленной на Луне, Марсе и других мирах: что это за машины, зачем их отправили и что они открыли, — с ясной связью инженерии и науки и с точностью во всём.', 'Біздің міндет — Айда, Марста және басқа әлемдерде қалған техника туралы әңгімеге негізделген білім беру жобасын жасау: бұл қандай машиналар, оларды неге жіберді және олар нені ашты — инженерия мен ғылымның айқын байланысымен және барлық жерде дәлдікпен.')[state.lang]),
@@ -4881,14 +4983,14 @@ ROUTES.credits = () => `<h1 class="page-h1">${esc(ui('credits'))}</h1>
   <h2 class="sec-h">${esc(T('Data and media', 'Данные и медиа', 'Деректер және медиа')[state.lang])}</h2>
   <ul class="bullets"><li>${esc(ui('azmthAttr'))}${cites(['azmth-moon-data', 'azmth-mars-data'])}</li>
   <li>${esc(LT(NASA_LICENSE))}${cites(['nasa-media'])}</li>
-  <li>${esc(T('Blueprint drawings of Lunokhod 1 and Opportunity are original simplified schematics made for this site. No photographs are embedded; places for photos are marked in the code.', 'Схемы Лунохода-1 и Opportunity — упрощённые рисунки, сделанные для этого сайта. Фотографии не встроены; места для них отмечены в коде.', 'Луноход-1 мен Opportunity сызбалары — осы сайт үшін жасалған жеңілдетілген суреттер. Фотосуреттер енгізілмеген; олардың орны кодта белгіленген.')[state.lang])}</li></ul>
+  <li>${esc(ui('imgRights'))} ${esc(T(`The archive holds ${ARCHIVE_BUILD.images} images; each mission page lists the credit of every picture it shows.`, `В архиве ${ARCHIVE_BUILD.images} изображений; на странице каждой миссии указан автор каждого показанного снимка.`, `Мұрағатта ${ARCHIVE_BUILD.images} сурет бар; әр миссия бетінде көрсетілген әр суреттің авторы жазылған.`)[state.lang])}</li>
+  <li>${esc(T('Team photo and the RealPugs emblem: supplied by Team RealPugs. Blueprint drawings of Lunokhod 1 and Opportunity are original simplified schematics made for this site.', 'Фото команды и эмблема RealPugs предоставлены командой RealPugs. Схемы Лунохода-1 и Opportunity — упрощённые рисунки, сделанные для этого сайта.', 'Команда фотосы мен RealPugs эмблемасын RealPugs командасы ұсынды. Луноход-1 мен Opportunity сызбалары — осы сайт үшін жасалған жеңілдетілген суреттер.')[state.lang])}</li></ul>
   <h2 class="sec-h">${esc(T('Typefaces and libraries', 'Шрифты и библиотеки', 'Қаріптер және кітапханалар')[state.lang])}</h2>
   <ul class="bullets"><li>Tektur, Geologica — SIL Open Font License 1.1 (Google Fonts)</li><li>three.js 0.187.0 — MIT License</li><li>Tailwind CSS 4 (browser build) — MIT License</li><li>gltf-transform 4.5.1 — MIT License (${esc(T('used offline to optimise models', 'использован при подготовке моделей', 'модельдерді дайындауда қолданылды')[state.lang])})</li></ul>`;
 ROUTES['open-source'] = () => `<h1 class="page-h1">${esc(ui('openSource'))}</h1>
   <div class="prose">${P(esc(T('The original code of this project (HTML, CSS and JavaScript written for this site) is released under the Apache License, Version 2.0. The files LICENSE, NOTICE and README.md are included with the project.', 'Исходный код проекта (HTML, CSS и JavaScript, написанные для этого сайта) распространяется по лицензии Apache License 2.0. Файлы LICENSE, NOTICE и README.md приложены к проекту.', 'Жобаның бастапқы коды (осы сайт үшін жазылған HTML, CSS және JavaScript) Apache License 2.0 лицензиясымен таратылады. LICENSE, NOTICE және README.md файлдары жобаға қоса берілген.')[state.lang]),
     esc(T('Apache 2.0 does not cover third-party material: 3D models, scientific publications, catalogue data and libraries keep their own licences — see Credits and licences.', 'Apache 2.0 не распространяется на чужие материалы: 3D-модели, научные публикации, данные каталогов и библиотеки сохраняют свои лицензии — см. раздел «Авторы и лицензии».', 'Apache 2.0 бөгде материалдарға қолданылмайды: 3D модельдер, ғылыми жарияланымдар, каталог деректері мен кітапханалар өз лицензияларын сақтайды — «Авторлар және лицензиялар» бөлімін қараңыз.')[state.lang]))}</div>
-  <p class="notice">${esc(T('Public GitHub repository: the team publishes the project and adds the link here.', 'Публичный репозиторий на GitHub: команда публикует проект и добавляет ссылку сюда.', 'GitHub-тағы ашық репозиторий: команда жобаны жариялап, сілтемені осында қосады.')[state.lang])}</p>
-  <p><a class="btn" href="#/credits">${esc(ui('credits'))}</a></p>`;
+  <p class="mt-4 flex flex-wrap gap-2"><a class="btn" href="https://github.com/d0d3p4ik-star/Vestige" target="_blank" rel="noopener">GitHub: d0d3p4ik-star/Vestige ↗</a><a class="btn" href="#/credits">${esc(ui('credits'))}</a></p>`;
 ROUTES['ai-disclosure'] = () => {
   const rows = [
     [T('Coding assistance', 'Помощь в программировании', 'Бағдарламалауға көмек'), T('HTML, CSS and JavaScript of the site, the 3D scene and the data structures.', 'HTML, CSS и JavaScript сайта, 3D-сцена и структуры данных.', 'Сайттың HTML, CSS және JavaScript коды, 3D көрініс және дерек құрылымдары.')],
@@ -4901,12 +5003,267 @@ ROUTES['ai-disclosure'] = () => {
   <p class="lead">${esc(T('Tool: Claude by Anthropic (models Claude Fable 5.2 and Claude Opus 5.5), used through Claude.', 'Инструмент: Claude от Anthropic (модели Claude Fable 5.2 и Claude Opus 5.5), через приложение Claude.', 'Құрал: Anthropic компаниясының Claude-ы (Claude Fable 5.2 және Claude Opus 5.5 модельдері), Claude қолданбасы арқылы.')[state.lang])}</p>
   <div class="table-wrap"><table class="data"><thead><tr><th scope="col">${esc(T('Purpose', 'Назначение', 'Мақсаты')[state.lang])}</th><th scope="col">${esc(T('What it did', 'Что сделано', 'Не істелді')[state.lang])}</th></tr></thead><tbody>${rows.map(([a, b]) => `<tr><td>${esc(LT(a))}</td><td>${esc(LT(b))}</td></tr>`).join('')}</tbody></table></div>
   <h2 class="sec-h">${esc(T('Human review and verification', 'Проверка людьми', 'Адамдардың тексеруі')[state.lang])}</h2>
-  <p class="notice">${esc(T('Team RealPugs lists here who reviewed which parts, and adds any other AI or SI tools the team actually used. This list is not invented.', 'Команда RealPugs указывает здесь, кто проверял какие части, и добавляет другие инструменты ИИ, которые она действительно использовала. Этот список не выдуман.', 'RealPugs командасы мұнда қай бөлікті кім тексергенін көрсетіп, нақты қолданған басқа ЖИ құралдарын қосады. Бұл тізім ойдан шығарылмаған.')[state.lang])}</p>`;
+  <p>${esc(T('Team RealPugs is responsible for everything published here. Factual statements carry a link to their source, so that anyone can check them; archive records keep the wording and the “facts checked” date of the catalogue they come from.', 'За всё опубликованное здесь отвечает команда RealPugs. У фактических утверждений есть ссылка на источник, чтобы любой мог их проверить; записи архива сохраняют формулировки и дату проверки фактов из каталога.', 'Мұнда жарияланғанның бәріне RealPugs командасы жауап береді. Нақты деректердің дереккөзге сілтемесі бар — оны кез келген адам тексере алады; мұрағат жазбалары каталогтағы тұжырымдар мен тексерілген күнді сақтайды.')[state.lang])}</p>`;
 };
+
+/* =====================================================================================
+   VESTIGE: страницы всех записей каталога (фото с авторством, факты, хронология,
+   координаты, источники), тесты после материалов, команда и «Beyond the screen».
+   Подробные записи лежат в data/missions/<planet>/<slug>.json и грузятся по одной,
+   только когда открыта страница записи.
+   ===================================================================================== */
+Object.assign(UI, {
+  tourMoon: T('Story: the Moon', 'Рассказ: Луна', 'Әңгіме: Ай'), tourMars: T('Story: Mars', 'Рассказ: Марс', 'Әңгіме: Марс'),
+  impact: T('Beyond the screen — our impact', 'За пределами экрана — наш импакт', 'Экраннан тыс — біздің ықпалымыз'),
+  labMoon: T('Moon archive', 'Архив Луны', 'Ай мұрағаты'), labMars: T('Mars archive', 'Архив Марса', 'Марс мұрағаты'),
+  labRecords: T('{n} catalogue records', 'записей каталога: {n}', 'каталог жазбасы: {n}'),
+  fNation: T('Country', 'Страна', 'Ел'), fGroup: T('Agency', 'Агентство', 'Агенттік'), fYearFrom: T('Year from', 'Год от', 'Жыл (бастап)'), fYearTo: T('Year to', 'Год до', 'Жыл (дейін)'),
+  archBuild: T('Archive built {built}: {pages} of {total} catalogue pages saved, {images} images stored locally, {fail} image download failures, {err} source errors.', 'Архив собран {built}: сохранено {pages} из {total} страниц каталога, локально хранится {images} изображений, сбоев загрузки изображений: {fail}, ошибок источников: {err}.', 'Мұрағат {built} жиналды: каталогтың {total} бетінің {pages} сақталды, жергілікті {images} сурет бар, сурет жүктеу қатесі: {fail}, дереккөз қатесі: {err}.'),
+  photos: T('{n} photos', 'фото: {n}', 'фото: {n}'),
+  catLoading: T('Loading the archive record…', 'Загружается запись архива…', 'Мұрағат жазбасы жүктелуде…'),
+  catFail: T('The detailed record could not be loaded. The catalogue page is linked below.', 'Подробную запись загрузить не удалось. Ссылка на страницу каталога — ниже.', 'Толық жазбаны жүктеу мүмкін болмады. Каталог бетіне сілтеме төменде.'),
+  catLang: T('', 'Факты и хронология записи приведены на языке источника (английский), чтобы не исказить их при переводе.', 'Жазбаның деректері мен хронологиясы аударғанда бұрмаланбауы үшін дереккөз тілінде (ағылшынша) берілген.'),
+  secNumbers: T('Key numbers', 'Главные цифры', 'Негізгі сандар'), secFacts: T('Mission facts', 'Факты о миссии', 'Миссия деректері'),
+  secPhys: T('Outcome, status and what remains', 'Итог, состояние и что осталось', 'Нәтиже, жағдай және не қалды'),
+  secGallery: T('In pictures', 'Фотографии', 'Суреттер'), secQuiz: T('Check yourself', 'Проверьте себя', 'Өзіңізді тексеріңіз'),
+  secSources: T('Sources and credits', 'Источники и авторство', 'Дереккөздер және авторлық'),
+  srcFact: T('source', 'источник', 'дереккөз'),
+  fOpStatus: T('Operational status', 'Рабочее состояние', 'Жұмыс күйі'), fSurface: T('Hardware reached the surface?', 'Техника достигла поверхности?', 'Техника бетке жетті ме?'),
+  fChecked: T('Facts checked by the catalogue', 'Факты проверены каталогом', 'Каталог деректерді тексерген күн'), f3d: T('3D model', '3D-модель', '3D модель'),
+  opNotReported: T('Not reported separately in the catalogue', 'В каталоге отдельно не указано', 'Каталогта бөлек көрсетілмеген'),
+  surfYes: T('Yes — the catalogue records that hardware reached the surface', 'Да — по каталогу техника достигла поверхности', 'Иә — каталог бойынша техника бетке жеткен'),
+  surfNo: T('No — the catalogue records no hardware on the surface', 'Нет — по каталогу техники на поверхности нет', 'Жоқ — каталог бойынша бетте техника жоқ'),
+  surfNotFlown: T('No — it was never flown (cancelled, planned or in development)', 'Нет — полёта не было (отменена, запланирована или в разработке)', 'Жоқ — ұшпаған (тоқтатылған, жоспарланған немесе әзірленуде)'),
+  surfCoords: T('The catalogue gives surface coordinates for this record', 'Каталог приводит координаты на поверхности для этой записи', 'Каталог бұл жазба үшін беттегі координаттарды береді'),
+  surfNotStated: T('Not stated: the Mars catalogue gives no surface coordinates for this record', 'Не указано: каталог Марса не приводит координат на поверхности для этой записи', 'Көрсетілмеген: Марс каталогы бұл жазба үшін беттегі координаттарды бермейді'),
+  orbitNote: T('This is an orbiting or passing spacecraft, not a surface object.', 'Это орбитальный или пролётный аппарат, а не объект на поверхности.', 'Бұл орбиталық немесе жанынан ұшқан аппарат, беттегі нысан емес.'),
+  coordApprox: T('approximate or unconfirmed', 'приблизительно или не подтверждено', 'шамамен немесе расталмаған'), coordStated: T('as stated by the source', 'как указано в источнике', 'дереккөзде көрсетілгендей'),
+  coordNone: T('No coordinates in the catalogue record', 'В записи каталога координат нет', 'Каталог жазбасында координаттар жоқ'),
+  costNone: T('Unknown / not reported: the catalogue record gives no cost figure, and Vestige does not estimate one.', 'Неизвестно / не сообщается: в записи каталога стоимости нет, а Vestige её не оценивает.', 'Белгісіз / хабарланбаған: каталог жазбасында құны жоқ, ал Vestige оны бағаламайды.'),
+  costFromFacts: T('Cost-related facts from the catalogue record, each with its own source. Amounts are quoted as written there (currency, year and scope as stated).', 'Факты о стоимости из записи каталога, у каждого свой источник. Суммы приведены как в записи (валюта, год и охват — как там указано).', 'Каталог жазбасындағы құнға қатысты деректер, әрқайсысының өз дереккөзі бар. Сомалар жазбадағыдай берілген (валюта, жыл және қамту — сондағыдай).'),
+  no3d: T('No verified 3D model for this record', 'Проверенной 3D-модели для этой записи нет', 'Бұл жазба үшін тексерілген 3D модель жоқ'),
+  imgCredit: T('Credit', 'Автор', 'Автор'), imgOriginal: T('original', 'оригинал', 'түпнұсқа'), imgType: T('Type (from the caption)', 'Тип (по подписи)', 'Түрі (жазба бойынша)'),
+  imgLicence: T('Licence stated in the credit', 'Лицензия в подписи', 'Жазбадағы лицензия'), imgLicNone: T('not stated — check the original', 'не указана — проверьте оригинал', 'көрсетілмеген — түпнұсқаны тексеріңіз'),
+  imgRights: T('Image rights: every picture keeps the credit and link printed on its AZMTH page. The catalogue’s CC BY 4.0 licence covers the data, not the photographs; check the original before reusing an image. Local copies are resized.', 'Права на изображения: у каждого снимка сохранены автор и ссылка со страницы AZMTH. Лицензия каталога CC BY 4.0 относится к данным, а не к фотографиям; перед повторным использованием проверьте оригинал. Локальные копии уменьшены.', 'Сурет құқықтары: әр суретте AZMTH бетіндегі автор мен сілтеме сақталған. Каталогтың CC BY 4.0 лицензиясы суреттерге емес, деректерге қатысты; қайта қолданар алдында түпнұсқаны тексеріңіз. Жергілікті көшірмелер кішірейтілген.'),
+  imgTableH: T('Image credits', 'Авторство изображений', 'Суреттердің авторлығы'), imgCaption: T('Image', 'Изображение', 'Сурет'),
+  imgMissingLocal: T('Local copy missing — see the source', 'Локальной копии нет — см. источник', 'Жергілікті көшірме жоқ — дереккөзді қараңыз'),
+  srcPage: T('AZMTH research page for this record', 'Страница этой записи на AZMTH', 'Осы жазбаның AZMTH беті'),
+  srcListed: T('Sources listed by the catalogue ({n})', 'Источники, указанные каталогом ({n})', 'Каталог көрсеткен дереккөздер ({n})'),
+  viewLarger: T('View larger', 'Открыть крупнее', 'Үлкейтіп көру'),
+  quizIntro: T('Three questions made from the catalogue data of this record.', 'Три вопроса по данным каталога об этой записи.', 'Осы жазбаның каталог деректері бойынша үш сұрақ.'),
+  qYear: T('Which year does the catalogue give for “{name}”?', 'Какой год указан в каталоге для «{name}»?', 'Каталогта «{name}» үшін қай жыл көрсетілген?'),
+  qOp: T('Who operated “{name}”?', 'Кто управлял «{name}»?', '«{name}» кімнің басқаруында болды?'),
+  qStatus: T('What is the status of “{name}” in the catalogue?', 'Какой статус у «{name}» в каталоге?', 'Каталогта «{name}» мәртебесі қандай?'),
+  qType: T('What kind of record is “{name}”?', 'К какому типу относится «{name}»?', '«{name}» қай түрге жатады?'),
+  qRight: T('Correct', 'Верно', 'Дұрыс'), qWrong: T('Not quite. The catalogue says: {a}', 'Не совсем. В каталоге: {a}', 'Дәл емес. Каталогта: {a}'),
+  qScore: T('Result: {n} of {total}', 'Результат: {n} из {total}', 'Нәтиже: {total}-ден {n}'),
+  noKkVoice: T('', '', 'Бұл құрылғыда қазақша дауыс орнатылмаған, сондықтан мәтінді әдепкі дауыс оқиды. Қазақша дауысты жүйенің сөйлеу параметрлерінен қосуға болады (мысалы, Microsoft Edge-тегі «Айгүл» немесе «Дәулет»).'),
+  teamH: T('The team', 'Команда', 'Команда'), teamOfficial: T('Official team page on spaceappschallenge.org', 'Официальная страница команды на spaceappschallenge.org', 'spaceappschallenge.org сайтындағы ресми команда беті'),
+  teamPhotoCap: T('Team RealPugs at the National Library of the Republic of Kazakhstan in Almaty, during the talks about placing Vestige there. The laptop shows the project.', 'Команда RealPugs в Национальной библиотеке Республики Казахстан в Алматы во время переговоров о размещении Vestige. На ноутбуке — проект.', 'RealPugs командасы Алматыдағы Қазақстан Республикасының Ұлттық кітапханасында, Vestige-ті орналастыру туралы келіссөз кезінде. Ноутбукте — жоба.'),
+  teamLogoCap: T('The RealPugs emblem', 'Эмблема RealPugs', 'RealPugs эмблемасы'),
+  photoBy: T('Photo: Team RealPugs', 'Фото: команда RealPugs', 'Фото: RealPugs командасы'),
+});
+
+const TEAM = [
+  [T('Amir Yermayan', 'Амир Ермаян', 'Амир Ермаян'), T('Team Leader', 'Руководитель команды', 'Команда жетекшісі')],
+  [T('Amir Abikenov', 'Амир Абикенов', 'Амир Абикенов'), T('Programmer', 'Программист', 'Бағдарламашы')],
+  [T('Arsen Li', 'Арсен Ли', 'Арсен Ли'), T('Video Editor', 'Видеомонтажёр', 'Бейнемонтажшы')],
+  [T('Arsen Sabayev', 'Арсен Сабаев', 'Арсен Сабаев'), T('Partnerships & Programming', 'Партнёрства и программирование', 'Серіктестік және бағдарламалау')],
+];
+const TEAM_URL = 'https://www.spaceappschallenge.org/2026/find-a-team/realpugs/';
+const TEAM_PHOTO = 'images/team/realpugs-national-library.jpg', TEAM_LOGO = 'images/team/realpugs-logo.jpg';
+const NATION = {
+  'United States': T('United States', 'США', 'АҚШ'), 'Soviet Union': T('Soviet Union', 'СССР', 'КСРО'), Russia: T('Russia', 'Россия', 'Ресей'), China: T('China', 'Китай', 'Қытай'),
+  Japan: T('Japan', 'Япония', 'Жапония'), India: T('India', 'Индия', 'Үндістан'), Europe: T('Europe', 'Европа', 'Еуропа'), Israel: T('Israel', 'Израиль', 'Израиль'),
+  'South Korea': T('South Korea', 'Южная Корея', 'Оңтүстік Корея'), 'United Arab Emirates': T('United Arab Emirates', 'ОАЭ', 'БАӘ'), Multinational: T('Multinational', 'Международная', 'Халықаралық'),
+};
+const nationName = n => LT(NATION[n]) || n || '—';
+
+/* ---------- Подробная запись: одна загрузка на страницу ---------- */
+const recordCache = new Map();
+function loadRecord(planet, slug) {
+  const key = `${planet}/${slug}`;
+  if (!recordCache.has(key)) recordCache.set(key, fetch(`data/missions/${key}.json`).then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }).catch(err => { recordCache.delete(key); throw err; }));
+  return recordCache.get(key);
+}
+const catRecord = arg => { const [planet, slug] = String(arg).split('/'); return archRecords().find(r => !r.mission && r.planet === planet && r.slug === slug); };
+const NOT_FLOWN = ['cancelled', 'planned', 'development'];
+const ORBITAL = ['orbiter', 'flyby', 'relay', 'crewed-orbiter', 'crewed-flyby'];
+function surfaceText(r) {
+  if (NOT_FLOWN.includes(r.status)) return ui('surfNotFlown');
+  if (r.planet === 'moon') return ui(r.reached ? 'surfYes' : 'surfNo');
+  return ui(r.reached ? 'surfCoords' : 'surfNotStated');
+}
+const opText = r => ['operating', 'ended', ...NOT_FLOWN].includes(r.status) ? statusLabel(r.status) : ui('opNotReported');
+const extLink = (url, label) => `<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`;
+const hostOf = url => { try { return new URL(url).hostname.replace(/^www\./, ''); } catch { return ui('srcFact'); } };
+
+function catalogPage(arg) {
+  const r = catRecord(arg);
+  if (!r) return `<h1 class="page-h1">${esc(ui('missions'))}</h1><p>${esc(ui('noMatches'))}</p><p class="mt-4"><a class="btn" href="#/missions">${esc(ui('missions'))}</a></p>`;
+  if (r.featured) return missionPage(r.featured);
+  const list = archRecords().filter(x => x.planet === r.planet && !x.mission).sort((a, b) => (a.year ?? 9999) - (b.year ?? 9999) || a.name.localeCompare(b.name));
+  const i = list.indexOf(r), prev = list[(i - 1 + list.length) % list.length], next = list[(i + 1) % list.length];
+  const coords = r.coords ? `${coordStr(r.coords[0], r.coords[1])} · ${esc(ui(r.coords[2] ? 'coordApprox' : 'coordStated'))}` : esc(ui('coordNone'));
+  const dl = [['fName', esc(r.name)], ['fAgency', esc(r.op)], ['fCountry', esc(nationName(r.nation))], ['fRecord', esc(LT(UI.rec[r.kind]))], ['fType', esc(typeLabel(r.type))], ['fPlanet', esc(planetName(r.planet))],
+    ['sortYear', r.year ?? '—'], ['fOutcome', esc(statusLabel(r.status))], ['fOpStatus', esc(opText(r))], ['fSurface', esc(surfaceText(r))], ['fCoords', coords], ['f3d', esc(ui('no3d'))], ['fChecked', esc(r.checked || '—')]];
+  return `<div class="mission" data-planet="${esc(r.planet)}" data-cat="${esc(`${r.planet}/${r.slug}`)}">
+  <nav class="crumbs"><a href="#/missions">${esc(ui('missions'))}</a> <span aria-hidden="true">/</span> <a href="#/missions?planet=${esc(r.planet)}">${esc(planetName(r.planet))}</a></nav>
+  <header class="mission-head">
+    <p class="text-[0.875rem] text-dim">${esc(r.op)} · ${esc(nationName(r.nation))} · ${esc([...new Set([typeLabel(r.type), LT(UI.rec[r.kind])])].join(' · '))}${r.year ? ` · ${r.year}` : ''}</p>
+    <h1 class="page-h1">${esc(r.name)}</h1>
+    <div class="badges">${badge(`s-${r.status}`, `${ui('fOutcome')}: ${statusLabel(r.status)}`)}${r.still ? badge('still', ui('still')) : ''}${ORBITAL.includes(r.type) && !r.reached ? badge('neutral', LT(UI.phys.orbit)) : ''}</div>
+  </header>
+  <div id="cat-hero"></div>
+  <div class="mission-grid">
+    <section aria-labelledby="sov"><h2 id="sov" class="sec-h">${esc(ui('secOverview'))}</h2><p id="cat-status" class="cat-status" lang="en"></p><dl class="facts-dl">${dl.map(([k, v]) => `<div><dt>${esc(ui(k))}</dt><dd>${v}</dd></div>`).join('')}</dl></section>
+    <section aria-labelledby="snu" id="cat-numbers" hidden><h2 id="snu" class="sec-h">${esc(ui('secNumbers'))}</h2><div class="stats" lang="en"></div></section>
+  </div>
+  <div id="cat-body"><p class="notice" role="status">${esc(ui('catLoading'))}</p></div>
+  ${quizBlock(r)}
+  <section aria-labelledby="ssc"><h2 id="ssc" class="sec-h">${esc(ui('secSources'))}</h2>
+    <p><a class="btn btn-sm" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(ui('srcPage'))} ↗</a></p>
+    <div id="cat-sources"></div>
+    <p class="mt-3 text-[0.8125rem] text-dim">${esc(ui('azmthAttr'))}${cites(['azmth-moon-data', 'azmth-mars-data'])}</p></section>
+  <nav class="pager"><a class="btn" href="${prev.href}">← ${esc(recName(prev))}</a><a class="btn" href="${next.href}">${esc(recName(next))} →</a></nav></div>`;
+}
+
+/* ---------- Изображения: подпись, автор, ссылка на оригинал, тип ---------- */
+function figureHTML(im, hero = false) {
+  const credit = `${im.credit ? `<b>${esc(ui('imgCredit'))}:</b> ${im.original_url ? extLink(im.original_url, im.credit) : esc(im.credit)}` : `<b>${esc(ui('imgCredit'))}:</b> ${esc(ui('imgLicNone'))}`}`;
+  const cap = `<figcaption class="cap" lang="en">${esc(im.caption)}<br>${credit}${im.image_type !== 'image type unverified' ? ` · ${esc(im.image_type)}` : ''}</figcaption>`;
+  if (!im.file) return `<figure class="img-missing"><figcaption>${esc(ui('imgMissingLocal'))}: ${extLink(im.source_image_url, hostOf(im.source_image_url))}<br>${esc(im.caption)}</figcaption></figure>`;
+  const img = `<img src="${esc(im.file)}" alt="${esc(im.caption)}" width="${im.width || ''}" height="${im.height || ''}" loading="${hero ? 'eager' : 'lazy'}" decoding="async">`;
+  return `<figure class="${hero ? 'hero-fig' : ''}"><button type="button" class="zoom" data-full="${esc(im.file)}" data-cap="${esc(`${im.caption} — ${im.credit || ''}`)}" aria-label="${esc(`${ui('viewLarger')}: ${im.caption}`)}">${img}</button>${cap}</figure>`;
+}
+function creditsTable(images) {
+  if (!images.length) return '';
+  return `<details class="credits"><summary>${esc(ui('imgTableH'))} (${images.length})</summary>
+    <div class="table-wrap"><table class="data"><thead><tr><th scope="col">${esc(ui('imgCaption'))}</th><th scope="col">${esc(ui('imgCredit'))}</th><th scope="col">${esc(ui('imgLicence'))}</th><th scope="col">${esc(ui('imgType'))}</th></tr></thead><tbody>
+    ${images.map(im => `<tr lang="en"><td>${esc(im.caption)}</td><td>${esc(im.credit || '—')}${im.original_url ? ` · ${extLink(im.original_url, ui('imgOriginal'))} ↗` : ''}</td><td>${esc(im.stated_licence || ui('imgLicNone'))}</td><td>${esc(im.image_type)}</td></tr>`).join('')}</tbody></table></div>
+    <p class="mt-2 text-[0.8125rem] text-dim">${esc(ui('imgRights'))}</p></details>`;
+}
+const COST_RE = /\b(cost|costs|budget|price|funding|funded|contract|spent|spending|appropriat)/i;
+
+async function fillCatalog(root, r) {
+  const body = $('#cat-body', root);
+  let d;
+  try { d = await loadRecord(r.planet, r.slug); } catch (err) { console.warn('[Vestige] record', r.slug, err); if (body?.isConnected) body.innerHTML = `<p class="notice">${esc(ui('catFail'))}</p>`; return; }
+  if (!body?.isConnected) return;                       // страницу уже закрыли или сменили
+  const imgs = d.images || [], hero = imgs.find(im => im.file && im.lead) || imgs.find(im => im.file), rest = imgs.filter(im => im !== hero);
+  if (hero) $('#cat-hero', root).innerHTML = figureHTML(hero, true);
+  $('#cat-status', root).textContent = d.short_status || '';
+  if (d.stats?.length) { const box = $('#cat-numbers', root); box.hidden = false; box.querySelector('.stats').innerHTML = d.stats.map(([v, label]) => `<div class="stat"><b>${esc(v)}</b><span>${esc(label)}</span></div>`).join(''); }
+  const src = url => url ? ` <a class="fact-src" href="${esc(url)}" target="_blank" rel="noopener" title="${esc(hostOf(url))}" aria-label="${esc(`${ui('srcFact')}: ${hostOf(url)} (${ui('opensNew')})`)}">${esc(hostOf(url))} ↗</a>` : '';
+  const facts = d.facts || [], costFacts = facts.filter(f => COST_RE.test(f.label)), langNote = ui('catLang');
+  const c = d.coordinates;
+  const phys = `<section aria-labelledby="sph"><h2 id="sph" class="sec-h">${esc(ui('secPhys'))}</h2><dl class="facts-dl">
+    <div><dt>${esc(ui('fOutcome'))}</dt><dd>${esc(statusLabel(r.status))}</dd></div>
+    <div><dt>${esc(ui('fOpStatus'))}</dt><dd>${esc(opText(r))}</dd></div>
+    <div><dt>${esc(ui('fSurface'))}</dt><dd>${esc(surfaceText(r))}${ORBITAL.includes(r.type) && !r.reached ? ` <span class="text-dim">${esc(ui('orbitNote'))}</span>` : ''}</dd></div>
+    <div><dt>${esc(ui('fCoords'))}</dt><dd>${c ? `${coordStr(c.lat, c.lon)} · <b>${esc(ui(c.precision === 'approximate' ? 'coordApprox' : 'coordStated'))}</b>${src(c.source)}${c.note ? `<br><span class="text-dim" lang="en">${esc(c.note)}</span>` : ''}` : d.site_note ? `<span lang="en">${esc(d.site_note.text)}</span>${src(d.site_note.source)}` : esc(ui('coordNone'))}</dd></div></dl></section>`;
+  body.innerHTML = `${langNote ? `<p class="notice text-[0.875rem]">${esc(langNote)}</p>` : ''}
+    ${facts.length ? `<section aria-labelledby="sfa"><h2 id="sfa" class="sec-h">${esc(ui('secFacts'))}</h2><dl class="facts-dl" lang="en">${facts.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}${src(f.source)}</dd></div>`).join('')}</dl></section>` : ''}
+    ${phys}
+    ${d.timeline?.length ? `<section aria-labelledby="stl"><h2 id="stl" class="sec-h">${esc(ui('secTimeline'))}</h2><ol class="tl" lang="en">${d.timeline.map(([date, txt, url]) => `<li><time>${esc(date)}</time><span>${esc(txt)}${src(url)}</span></li>`).join('')}</ol></section>` : ''}
+    <section aria-labelledby="sco"><h2 id="sco" class="sec-h">${esc(ui('secCost'))}</h2>${costFacts.length ? `<p class="text-[0.875rem] text-dim">${esc(ui('costFromFacts'))}</p><dl class="facts-dl" lang="en">${costFacts.map(f => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}${src(f.source)}</dd></div>`).join('')}</dl>` : `<p class="notice">${esc(ui('costNone'))}</p>`}</section>
+    ${rest.length ? `<section aria-labelledby="sga"><h2 id="sga" class="sec-h">${esc(ui('secGallery'))}</h2><div class="gallery">${rest.map(im => figureHTML(im)).join('')}</div></section>` : ''}`;
+  const refs = d.references || [];
+  $('#cat-sources', root).innerHTML = `${refs.length ? `<h3 class="ref-group">${esc(ui('srcListed', { n: refs.length }))}</h3><ol class="refs refs-plain" lang="en">${refs.map(x => `<li><a class="ref-title" href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title || x.url)}</a><span class="ref-meta">${esc(hostOf(x.url))}</span></li>`).join('')}</ol>` : ''}${creditsTable(imgs)}`;
+}
+// Миссия из рассказа: добавляем фотографии её записи каталога
+async function fillGallery(box) {
+  const [planet, slug] = box.dataset.gallery.split('/');
+  let d;
+  try { d = await loadRecord(planet, slug); } catch { return; }
+  if (!box.isConnected) return;
+  const imgs = (d.images || []).filter(im => im.file);
+  if (!imgs.length) return;
+  const lead = imgs.find(im => im.lead) || imgs[0], rest = imgs.filter(im => im !== lead);
+  box.innerHTML = `${figureHTML(lead, true)}${rest.length ? `<div class="gallery">${rest.map(im => figureHTML(im)).join('')}</div>` : ''}${creditsTable(d.images)}`;
+}
+
+/* ---------- Просмотр фото крупно ---------- */
+function openLightbox(btn) {
+  const dlg = $('#lightbox'); if (!dlg?.showModal) return;
+  dlg.querySelector('img').src = btn.dataset.full; dlg.querySelector('img').alt = btn.querySelector('img')?.alt || '';
+  dlg.querySelector('p').textContent = btn.dataset.cap;
+  dlg.querySelector('button').setAttribute('aria-label', ui('close'));
+  dlg.showModal();
+}
+on(document, 'click', e => {
+  const z = e.target.closest?.('.zoom[data-full]');
+  if (z) { openLightbox(z); return; }
+  const dlg = $('#lightbox');
+  if (dlg?.open && (e.target === dlg || e.target.closest('#lightbox button'))) dlg.close();
+});
+
+/* ---------- Тест после материала: вопросы строятся из данных каталога ---------- */
+function quizBlock(r) {
+  const rnd = prng([...`${r.planet}:${r.slug}`].reduce((h, ch) => Math.imul(h, 31) + ch.charCodeAt(0) | 0, 7));
+  const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const pool = archRecords().filter(x => x.planet === r.planet && !x.mission && x !== r), name = recName(r);
+  const pick = (right, others) => { const opts = [...new Set(others.filter(o => o && o !== right))]; return opts.length >= 2 ? shuffle([right, ...shuffle(opts).slice(0, 3)]) : null; };
+  const qs = [];
+  if (r.year && !String(name).includes(String(r.year))) { const o = pick(r.year, [r.year - 7, r.year - 3, r.year + 2, r.year + 5, r.year + 9].filter(y => y > 1956 && y < 2040)); if (o) qs.push([ui('qYear', { name }), o.map(String), String(r.year)]); }
+  { const o = pick(r.op, pool.map(x => x.op).filter(x => x.length < 60)); if (o && r.op.length < 80) qs.push([ui('qOp', { name }), o, r.op]); }
+  { const o = pick(statusLabel(r.status), ['success', 'partial', 'failure', 'cancelled', 'operating', 'planned'].map(statusLabel)); if (o) qs.push([ui('qStatus', { name }), o, statusLabel(r.status)]); }
+  if (qs.length < 3) { const o = pick(typeLabel(r.type), pool.map(x => typeLabel(x.type))); if (o) qs.push([ui('qType', { name }), o, typeLabel(r.type)]); }
+  if (!qs.length) return '';
+  return `<section aria-labelledby="squ" class="mquiz" data-total="${qs.length}"><h2 id="squ" class="sec-h">${esc(ui('secQuiz'))}</h2><p class="text-[0.875rem] text-dim">${esc(ui('quizIntro'))}</p>
+    ${qs.map(([q, opts, right], n) => `<fieldset class="mq" data-right="${esc(right)}"><legend>${n + 1}. ${esc(q)}</legend><div class="mq-opts">${opts.map(o => `<button type="button" class="btn btn-sm" data-opt="${esc(o)}">${esc(o)}</button>`).join('')}</div><p class="mq-res" role="status"></p></fieldset>`).join('')}
+    <p class="mq-score" role="status"></p></section>`;
+}
+function wireQuiz(root) {
+  root.querySelectorAll('.mquiz').forEach(quiz => {
+    quiz.addEventListener('click', e => {
+      const b = e.target.closest('[data-opt]'), fs = b?.closest('.mq');
+      if (!b || fs.dataset.done) return;
+      const ok = b.dataset.opt === fs.dataset.right;
+      fs.dataset.done = ok ? 'ok' : 'no';
+      fs.querySelectorAll('[data-opt]').forEach(x => { x.disabled = true; if (x.dataset.opt === fs.dataset.right) x.classList.add('is-right'); });
+      if (!ok) b.classList.add('is-wrong');
+      fs.querySelector('.mq-res').textContent = ok ? ui('qRight') : ui('qWrong', { a: fs.dataset.right });
+      const all = [...quiz.querySelectorAll('.mq')];
+      if (all.every(x => x.dataset.done)) quiz.querySelector('.mq-score').textContent = ui('qScore', { n: all.filter(x => x.dataset.done === 'ok').length, total: all.length });
+    });
+  });
+}
+
+/* ---------- Команда и «Beyond the screen» ---------- */
+const teamCards = () => `<ul class="team">${TEAM.map(([n, role]) => `<li><b>${esc(LT(n))}</b><span>${esc(LT(role))}</span></li>`).join('')}</ul>`;
+const teamPhoto = () => `<figure class="team-photo"><img src="${TEAM_PHOTO}" alt="${esc(ui('teamPhotoCap'))}" width="960" height="1280" loading="lazy" decoding="async"><figcaption class="cap">${esc(ui('teamPhotoCap'))} ${esc(ui('photoBy'))}.</figcaption></figure>`;
+const IMPACT_TEXT = {
+  lead: T('Vestige is not only a website. We are taking it to a place where school students actually come to learn: the library.', 'Vestige — это не только сайт. Мы несём его туда, куда школьники действительно приходят учиться: в библиотеку.', 'Vestige — тек сайт емес. Біз оны оқушылар шынымен білім алуға келетін жерге — кітапханаға апарамыз.'),
+  cards: [
+    [T('A place in the library', 'Место в библиотеке', 'Кітапханадағы орын'), T('We arranged for Vestige to be placed in a library learning environment and agreed on cooperation with the administration of the National Library of the Republic of Kazakhstan in Almaty.', 'Мы добились размещения Vestige в библиотечной образовательной среде и договорились о сотрудничестве с администрацией Национальной библиотеки Республики Казахстан в Алматы.', 'Біз Vestige-ті кітапхананың білім беру ортасына орналастыруға қол жеткіздік және Алматыдағы Қазақстан Республикасы Ұлттық кітапханасының әкімшілігімен ынтымақтастық туралы келістік.')],
+    [T('Tests after every story', 'Тесты после материалов', 'Материалдан кейінгі тесттер'), T('Learning is checked, not assumed: the story tour ends with a quiz, and every mission page in the archive has its own short test built from the catalogue data.', 'Знания проверяются, а не подразумеваются: рассказ заканчивается викториной, а на каждой странице миссии в архиве есть свой короткий тест по данным каталога.', 'Білім тексеріледі: әңгіме викторинамен аяқталады, ал мұрағаттағы әр миссия бетінде каталог деректері бойынша өз қысқа тесті бар.')],
+    [T('Three languages', 'Три языка', 'Үш тіл'), T('The museum speaks English, Russian and Kazakh, so that students can read about space exploration in the language they think in.', 'Музей говорит на английском, русском и казахском, чтобы школьники читали об исследовании космоса на языке, на котором думают.', 'Мұражай ағылшын, орыс және қазақ тілдерінде сөйлейді — оқушылар ғарышты зерттеу туралы өз ойлайтын тілінде оқи алады.')],
+    [T('Why we do it', 'Зачем мы это делаем', 'Мұны не үшін істейміз'), T('We want to teach school students the history of space exploration and inspire them to choose science, engineering and the study of the Universe.', 'Мы хотим знакомить школьников с историей космоса и вдохновлять их заниматься наукой, инженерией и исследованием Вселенной.', 'Біз оқушыларды ғарыш тарихымен таныстырып, оларды ғылыммен, инженериямен және Ғаламды зерттеумен айналысуға шабыттандырғымыз келеді.')],
+  ],
+  honest: T('We do not publish numbers we cannot prove. Counts of students, lessons or visitors will appear here only when they are real.', 'Мы не публикуем цифры, которые не можем подтвердить. Количество учеников, занятий и посетителей появится здесь только тогда, когда оно будет настоящим.', 'Біз дәлелдей алмайтын сандарды жарияламаймыз. Оқушылар, сабақтар мен келушілер саны мұнда тек нақты болғанда ғана пайда болады.'),
+};
+const impactCards = () => `<div class="impact">${IMPACT_TEXT.cards.map(([h, p]) => `<div class="impact-card"><h3>${esc(LT(h))}</h3><p>${esc(LT(p))}</p></div>`).join('')}</div>`;
+ROUTES.impact = () => `<h1 class="page-h1">${esc(ui('impact'))}</h1>
+  <p class="lead">${esc(LT(IMPACT_TEXT.lead))}</p>
+  <div class="impact-split">${teamPhoto()}<div>${impactCards()}<p class="notice">${esc(LT(IMPACT_TEXT.honest))}</p>
+  <p class="mt-4 flex flex-wrap gap-2"><a class="btn" href="#/missions">${esc(ui('missions'))}</a><a class="btn" href="#/about">${esc(ui('about'))}</a></p></div></div>
+  <blockquote class="motto">${esc(ui('motto'))}</blockquote>`;
+function renderImpactCard() {
+  const box = $('#impact-card'); if (!box) return;
+  box.innerHTML = `<h3 class="pr-3 font-display text-[1.625rem] font-bold leading-[1.1]">${esc(ui('impact'))}</h3>
+    <p class="mt-4 max-w-[40rem]">${esc(LT(IMPACT_TEXT.lead))}</p>
+    <div class="impact-split mt-5">${teamPhoto()}<div><p>${esc(LT(IMPACT_TEXT.cards[0][1]))}</p><p class="mt-3">${esc(LT(IMPACT_TEXT.cards[3][1]))}</p>${teamCards()}
+    <p class="mt-4 flex flex-wrap gap-2"><a class="btn btn-sm" href="#/impact">${esc(ui('impact'))}</a><a class="btn btn-sm" href="#/about">${esc(ui('about'))}</a></p></div></div>`;
+}
 
 /* ---------- Действия на странице после отрисовки ---------- */
 function wirePage(r) {
   if (r.name === 'missions' && !r.arg) wireFilters('#arch-form', archState, paintArchive);
+  const cat = pageBody.querySelector('[data-cat]');
+  if (cat) { const rec = catRecord(cat.dataset.cat); if (rec) fillCatalog(cat, rec); }
+  pageBody.querySelectorAll('[data-gallery]').forEach(fillGallery);
+  wireQuiz(pageBody);
   if (r.name === 'references') wireFilters('#refs-form', refsState, paintRefs);
   if (r.name === 'timeline') wireFilters('#tl-form', tlState, paintTimeline);
   pageBody.querySelectorAll('[data-refs-filter]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); Object.assign(refsState, { q: '', mission: a.dataset.refsFilter, planet: '', group: '', type: '', from: '', to: '' }); location.hash = '#/references'; }));
@@ -4920,7 +5277,7 @@ function initLab() {
   const lab = $('#lab');
   if (!lab) return;
   let seen = false; try { seen = sessionStorage.getItem('rp-lab') === '1'; } catch { /* нет доступа — показываем */ }
-  if (new URLSearchParams(location.search).has('skipintro') || location.hash.startsWith('#/') || seen) { lab.remove(); return; }
+  if (new URLSearchParams(location.search).has('skipintro') || location.hash.startsWith('#/') || (seen && !new URLSearchParams(location.search).has('intro'))) { lab.remove(); return; }   // ?intro=1 показывает заставку снова
   lab.hidden = false;
   document.documentElement.classList.add('lab-open');
   const prev = document.activeElement, timers = [];
@@ -4928,7 +5285,7 @@ function initLab() {
     timers.forEach(clearTimeout);
     try { sessionStorage.setItem('rp-lab', '1'); } catch { /* не страшно */ }
     lab.classList.add('leaving');
-    setTimeout(() => { lab.remove(); document.documentElement.classList.remove('lab-open'); if (hash) location.hash = hash; else ($('#main h1') || prev)?.focus?.({ preventScroll: true }); }, reducedMotion.matches ? 0 : 450);
+    setTimeout(() => { globes.then(g => g?.dispose()); lab.remove(); document.documentElement.classList.remove('lab-open'); if (hash) location.hash = hash; else ($('#main h1') || prev)?.focus?.({ preventScroll: true }); }, reducedMotion.matches ? 0 : 450);
   };
   const paintLab = () => {
     lab.querySelector('#lab-title').textContent = ui('labTitle');
@@ -4939,6 +5296,7 @@ function initLab() {
     lab.querySelector('#lab-scan').textContent = lab.classList.contains('granted') ? ui('granted') : ui('scanning');
     lab.querySelector('#lab-live').textContent = ui('centralCaption');
     lab.querySelector('#lab-motto').textContent = ui('motto');
+    lab.querySelectorAll('[data-lab-planet]').forEach(b => { const p = b.dataset.labPlanet; b.querySelector('b').textContent = ui(p === 'moon' ? 'labMoon' : 'labMars'); b.querySelector('span').textContent = ui('labRecords', { n: (p === 'moon' ? ARCHIVE_MOON : ARCHIVE_MARS).length }); });
     lab.querySelectorAll('[data-mon]').forEach(b => { b.querySelector('b').textContent = ui(b.dataset.mon === 'language' ? 'language' : b.dataset.mon); });
     lab.querySelectorAll('[data-lab-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.labLang === state.lang)));
   };
@@ -4948,8 +5306,10 @@ function initLab() {
   lab.querySelectorAll('[data-mon]').forEach(b => b.addEventListener('click', () => {
     const k = b.dataset.mon;
     if (k === 'language') { lab.querySelector('.lab-langs').hidden = false; lab.querySelector('[data-lab-lang]')?.focus(); return; }
-    finish({ about: '#/about', challenge: '#/challenge', references: '#/references', openSource: '#/open-source', ai: '#/ai-disclosure' }[k]);
+    finish({ about: '#/about', impact: '#/impact', challenge: '#/challenge', references: '#/references', openSource: '#/open-source', ai: '#/ai-disclosure' }[k]);
   }));
+  lab.querySelectorAll('[data-lab-planet]').forEach(b => b.addEventListener('click', () => finish(`#/missions?planet=${b.dataset.labPlanet}`)));   // выбор планеты открывает её архив
+  const globes = initLabGlobes(lab);
   lab.querySelectorAll('[data-lab-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.labLang, true)));
   lab.addEventListener('keydown', e => {
     if (e.key === 'Escape') { finish(); return; }
@@ -4968,7 +5328,60 @@ function initLab() {
   lab.querySelector('#lab-skip').focus({ preventScroll: true });
 }
 
+/* ---------- 3D Луна и Марс на центральном экране заставки (один холст, два окна просмотра) ---------- */
+async function initLabGlobes(lab) {
+  const st = await stageReady;
+  if (!st || !lab.isConnected) return null;
+  const { THREE } = st.debug, canvas = lab.querySelector('#lab-canvas'), screen = lab.querySelector('.lab-window');
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch { return null; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.setScissorTest(true);
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50); camera.position.set(0, 0, 4.25);
+  let dead = false, raf = 0, last = performance.now();
+  const own = [];
+  const globes = ['moon', 'mars'].map(key => {
+    const scene = new THREE.Scene(), sun = new THREE.DirectionalLight(0xfff6ea, 3.1), pivot = new THREE.Group();
+    sun.position.set(-3, 2.2, 4); scene.add(sun, new THREE.AmbientLight(0x8fa3c8, 0.3), pivot);
+    pivot.rotation.z = key === 'mars' ? 0.44 : 0.027;                      // наклон оси: Марс 25°, Луна 1,5°
+    const tex = st.paintPlanet(key), geo = new THREE.SphereGeometry(1, 64, 48), mat = new THREE.MeshStandardMaterial({ map: tex.map, bumpMap: tex.bumpMap, bumpScale: 1.2, roughness: 1, metalness: 0 });
+    own.push(tex.map, tex.bumpMap, geo, mat);
+    const proc = new THREE.Mesh(geo, mat), spin = new THREE.Group(); spin.add(proc); pivot.add(spin);
+    st.loadAsset(`${key}-globe`).then(gltf => {                            // настоящая модель глобуса, если файл доступен
+      if (dead) return;
+      const model = gltf.scene.clone(true), box = new THREE.Box3().setFromObject(model), size = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3());
+      const fit = new THREE.Group(); model.position.set(-c.x, -c.y, -c.z); fit.add(model); fit.scale.setScalar(2 / Math.max(size.x, size.y, size.z, 1e-6));
+      spin.remove(proc); spin.add(fit);
+    }).catch(() => { /* файла модели нет — остаётся нарисованная поверхность */ });
+    const btn = lab.querySelector(`[data-lab-planet="${key}"]`);
+    return { scene, spin, btn, el: btn.querySelector('i'), speed: 0.22 };
+  });
+  const frame = now => {
+    if (dead) return;
+    raf = requestAnimationFrame(frame);
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    const w = screen.clientWidth, h = screen.clientHeight;
+    if (!w || !h) return;
+    const pr = renderer.getPixelRatio();
+    if (canvas.width !== Math.round(w * pr) || canvas.height !== Math.round(h * pr)) renderer.setSize(w, h, false);
+    const base = screen.getBoundingClientRect();
+    renderer.setScissor(0, 0, w, h); renderer.setViewport(0, 0, w, h); renderer.clear();
+    for (const g of globes) {
+      const hot = g.btn.matches(':hover, :focus-visible');
+      g.speed += ((state.motion ? (hot ? 0.9 : 0.22) : 0) - g.speed) * Math.min(1, dt * 4);
+      g.spin.rotation.y += g.speed * dt;
+      const r = g.el.getBoundingClientRect(), pad = r.width * 0.06;
+      const x = r.left - base.left - pad, y = h - (r.bottom - base.top) - pad, s = r.width + pad * 2;
+      renderer.setViewport(x, y, s, s); renderer.setScissor(x, y, s, s);
+      renderer.render(g.scene, camera);
+    }
+  };
+  screen.classList.add('gl');
+  raf = requestAnimationFrame(frame);
+  return { dispose() { dead = true; cancelAnimationFrame(raf); own.forEach(o => o.dispose()); renderer.dispose(); renderer.forceContextLoss?.(); } };
+}
+
 /* ---------- Запуск ---------- */
+renderImpactCard(); langHooks.push(renderImpactCard);
 renderMenu();
 renderCites();
 langHooks.push(() => {

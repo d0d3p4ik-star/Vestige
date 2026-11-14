@@ -1,4 +1,4 @@
-Forgotten Machines — Abandoned but Not Forgotten
+VESTIGE — a museum of the missions to the Moon and Mars
 Copyright 2026 Team RealPugs
 
 This product includes software developed by Team RealPugs for the
@@ -27,10 +27,20 @@ Libraries and fonts (loaded from public CDNs at run time)
   - The files in models/optimized/ are compressed copies of the originals
     (gltf-transform 4.5.1: meshopt geometry, WebP textures). The originals are unchanged.
 
+Images (images/)
+  - images/moon and images/mars: resized copies of the pictures shown on the
+    azmth.space mission pages. Each keeps the credit and the link to its original,
+    recorded in data/image-index.json and shown next to the picture on the site.
+    The CC BY 4.0 licence of the catalogue does NOT cover these photographs; every
+    entry is flagged VERIFY_BEFORE_PUBLICATION until its original licence is checked.
+  - images/team: the RealPugs emblem and the team photo, supplied by Team RealPugs.
+
 Data
   - Moon and Mars mission catalogues: azmth.space, licensed CC BY 4.0
     ("according to azmth.space's catalogue of Moon landing and impact sites";
-    Mars catalogue at https://azmth.space/mars/missions). Data as of 2 November 2026.
+    Mars catalogue at https://azmth.space/mars/missions). Data as of 2 November 2026; pages fetched on 14 November 2026
+    (see data/build-report.json). Page records in data/missions keep the catalogue's
+    wording for facts, timelines and source lists.
   - Scientific papers, NASA reports and agency documents are linked, not reproduced.
     Every source is listed on the site's References page with its title, author,
     year, document type and a direct link.
