@@ -1,0 +1,36 @@
+Forgotten Machines — Abandoned but Not Forgotten
+Copyright 2026 Team RealPugs
+
+This product includes software developed by Team RealPugs for the
+2026 NASA Space Apps Challenge. The original code (index.html: markup,
+styles and scripts written for this project) is licensed under the
+Apache License, Version 2.0 (see LICENSE).
+
+The Apache License does not cover the third-party material below.
+Each item keeps its own licence or terms of use.
+
+Libraries and fonts (loaded from public CDNs at run time)
+  - three.js 0.187.0 — MIT License — https://threejs.org
+  - Tailwind CSS 4, browser build — MIT License — https://tailwindcss.com
+  - Tektur and Geologica typefaces — SIL Open Font License 1.1 (Google Fonts)
+
+3D models (models/)
+  - Mars globe, 2001 Mars Odyssey, Lunar Reconnaissance Orbiter,
+    Apollo Lunar Module, Viking Lander, Mars Exploration Rover, Curiosity:
+    NASA 3D Resources (https://science.nasa.gov/3d-resources/; mirror: https://github.com/nasa/NASA-3D-Resources).
+  - InSight lander (deployed): NASA/JPL-Caltech.
+    NASA material is generally not subject to copyright in the United States.
+    Credit NASA and do not imply NASA endorsement (NASA Images and Media
+    Usage Guidelines: https://www.nasa.gov/nasa-brand-center/images-and-media/).
+  - Moon globe (models/planets/moon_small.glb): supplied by Team RealPugs.
+    Its original source and licence must be confirmed by the team before publication.
+  - The files in models/optimized/ are compressed copies of the originals
+    (gltf-transform 4.5.1: meshopt geometry, WebP textures). The originals are unchanged.
+
+Data
+  - Moon and Mars mission catalogues: azmth.space, licensed CC BY 4.0
+    ("according to azmth.space's catalogue of Moon landing and impact sites";
+    Mars catalogue at https://azmth.space/mars/missions). Data as of 2 November 2026.
+  - Scientific papers, NASA reports and agency documents are linked, not reproduced.
+    Every source is listed on the site's References page with its title, author,
+    year, document type and a direct link.
