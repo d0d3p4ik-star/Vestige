@@ -1,0 +1,3 @@
+{
+  "redirects": [{ "source": "/", "destination": "/vestige/", "permanent": false }]
+}

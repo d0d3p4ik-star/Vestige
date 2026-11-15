@@ -911,8 +911,8 @@ ROUTES.credits = () => {
 };
 ROUTES['open-source'] = () => `<h1 class="page-h1">${esc(ui('openSource'))}</h1>
   <div class="prose">${P(esc(ui('osP1')), esc(ui('osP2')))}</div>
-  <p class="notice">${esc(ui('osRepo'))}</p>
-  <p><a class="btn" href="#/credits">${esc(ui('credits'))}</a></p>`;
+  <p class="notice">${esc(ui('osRepo'))} <a href="https://github.com/d0d3p4ik-star/Vestige" target="_blank" rel="noopener">github.com/d0d3p4ik-star/Vestige ↗</a></p>
+  <p class="flex flex-wrap gap-2"><a class="btn btn-solid" href="https://github.com/d0d3p4ik-star/Vestige" target="_blank" rel="noopener">GitHub ↗</a><a class="btn" href="#/credits">${esc(ui('credits'))}</a></p>`;
 ROUTES['ai-disclosure'] = () => {
   const rows = [['aiCode', 'aiCodeT'], ['aiText', 'aiTextT'], ['aiTrans', 'aiTransT'], ['aiResearch', 'aiResearchT'], ['aiImages', 'aiImagesT'], ['aiImgGen', 'aiImgGenT']];
   return `<h1 class="page-h1">${esc(ui('ai'))}</h1>

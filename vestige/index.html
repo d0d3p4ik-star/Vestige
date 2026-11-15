@@ -3657,7 +3657,7 @@ Object.assign(UI, {
   crLibs: T('Typefaces and libraries', 'Шрифты и библиотеки', 'Қаріптер және кітапханалар'), crOffline: T('used offline to optimise the models', 'использован при подготовке моделей', 'модельдерді дайындауда қолданылды'),
   osP1: T('The original code of this project (HTML, CSS and JavaScript written for this site) is released under the Apache License, Version 2.0. The files LICENSE, NOTICE and README.md come with the project.', 'Исходный код проекта (HTML, CSS и JavaScript, написанные для этого сайта) распространяется по лицензии Apache License 2.0. Файлы LICENSE, NOTICE и README.md приложены к проекту.', 'Жобаның бастапқы коды (осы сайт үшін жазылған HTML, CSS және JavaScript) Apache License 2.0 лицензиясымен таратылады. LICENSE, NOTICE және README.md файлдары жобаға қоса берілген.'),
   osP2: T('Apache 2.0 does not cover third-party material: 3D models, photographs, scientific publications, catalogue data and libraries keep their own terms — see Credits and licences.', 'Apache 2.0 не распространяется на чужие материалы: 3D-модели, фотографии, научные публикации, данные каталогов и библиотеки сохраняют свои условия — см. «Авторы и лицензии».', 'Apache 2.0 бөгде материалдарға қолданылмайды: 3D модельдер, фотосуреттер, ғылыми жарияланымдар, каталог деректері мен кітапханалар өз шарттарын сақтайды — «Авторлар және лицензиялар» бөлімін қараңыз.'),
-  osRepo: T('Public GitHub repository: the team publishes the project and adds the link here.', 'Публичный репозиторий на GitHub: команда публикует проект и добавляет ссылку сюда.', 'GitHub-тағы ашық репозиторий: команда жобаны жариялап, сілтемені осында қосады.'),
+  osRepo: T('The full source code is public on GitHub:', 'Весь исходный код открыт на GitHub:', 'Барлық бастапқы код GitHub-та ашық:'),
   aiTool: T('Tool: Claude by Anthropic (models Claude Fable 5.2 and Claude Opus 5.5), used through the Claude app.', 'Инструмент: Claude от Anthropic (модели Claude Fable 5.2 и Claude Opus 5.5), через приложение Claude.', 'Құрал: Anthropic компаниясының Claude-ы (Claude Fable 5.2 және Claude Opus 5.5 модельдері), Claude қолданбасы арқылы.'),
   aiPurpose: T('Purpose', 'Назначение', 'Мақсаты'), aiWhat: T('What it did', 'Что сделано', 'Не істелді'),
   aiCode: T('Coding assistance', 'Помощь в программировании', 'Бағдарламалауға көмек'), aiCodeT: T('HTML, CSS and JavaScript of the site, the 3D scene and the data structures.', 'HTML, CSS и JavaScript сайта, 3D-сцена и структуры данных.', 'Сайттың HTML, CSS және JavaScript коды, 3D көрініс және дерек құрылымдары.'),
@@ -6619,8 +6619,8 @@ ROUTES.credits = () => {
 };
 ROUTES['open-source'] = () => `<h1 class="page-h1">${esc(ui('openSource'))}</h1>
   <div class="prose">${P(esc(ui('osP1')), esc(ui('osP2')))}</div>
-  <p class="notice">${esc(ui('osRepo'))}</p>
-  <p><a class="btn" href="#/credits">${esc(ui('credits'))}</a></p>`;
+  <p class="notice">${esc(ui('osRepo'))} <a href="https://github.com/d0d3p4ik-star/Vestige" target="_blank" rel="noopener">github.com/d0d3p4ik-star/Vestige ↗</a></p>
+  <p class="flex flex-wrap gap-2"><a class="btn btn-solid" href="https://github.com/d0d3p4ik-star/Vestige" target="_blank" rel="noopener">GitHub ↗</a><a class="btn" href="#/credits">${esc(ui('credits'))}</a></p>`;
 ROUTES['ai-disclosure'] = () => {
   const rows = [['aiCode', 'aiCodeT'], ['aiText', 'aiTextT'], ['aiTrans', 'aiTransT'], ['aiResearch', 'aiResearchT'], ['aiImages', 'aiImagesT'], ['aiImgGen', 'aiImgGenT']];
   return `<h1 class="page-h1">${esc(ui('ai'))}</h1>
