@@ -1,0 +1,48 @@
+Vestige — They may have been abandoned by humanity, but they should never be forgotten
+Copyright 2026 Team RealPugs
+
+This product includes software developed by Team RealPugs for the
+2026 NASA Space Apps Challenge. The original code (index.html: markup,
+styles and scripts written for this project) is licensed under the
+Apache License, Version 2.0 (see LICENSE).
+
+The Apache License does not cover the third-party material below.
+Each item keeps its own licence or terms of use.
+
+Libraries and fonts (loaded from public CDNs at run time)
+  - three.js 0.187.0 — MIT License — https://threejs.org
+  - Tailwind CSS 4, browser build — MIT License — https://tailwindcss.com
+  - Tektur and Geologica typefaces — SIL Open Font License 1.1 (Google Fonts)
+
+3D models (models/)
+  - Mars globe, 2001 Mars Odyssey, Lunar Reconnaissance Orbiter,
+    Apollo Lunar Module, Viking Lander, Mars Exploration Rover, Curiosity:
+    NASA 3D Resources (https://science.nasa.gov/3d-resources/; mirror: https://github.com/nasa/NASA-3D-Resources).
+  - InSight lander (deployed): NASA/JPL-Caltech.
+    NASA material is generally not subject to copyright in the United States.
+    Credit NASA and do not imply NASA endorsement (NASA Images and Media
+    Usage Guidelines: https://www.nasa.gov/nasa-brand-center/images-and-media/).
+  - Moon globe (models/planets/moon_small.glb): NASA Scientific Visualization Studio,
+    "Moon 3D Models for Web, AR, and Animation" (2026), https://svs.gsfc.nasa.gov/14959/
+  - Mars globe source page: NASA/JPL-Caltech, "Planet Mars, 3D Model" (2019),
+    https://science.nasa.gov/resource/planet-mars-3d-model/
+  - Archive photographs (img/archive/, 513 pictures for 115 missions): from the team's
+    photo archive; only images credited to NASA or other US government bodies, to ESA,
+    or released under an open licence (CC BY, CC BY-SA, CC0, public domain) are
+    included. Pictures credited to other agencies or companies, reprocessings by
+    private persons and NC/ND-licensed pictures were left out. Each picture keeps its
+    credit and a link to the original. The short English captions come from the
+    team's archive, which compiled them from the mission pages of azmth.space.
+  - The files in models/optimized/ are compressed copies of the originals
+    (gltf-transform 4.5.1: meshopt geometry, WebP textures). The originals are unchanged.
+
+Data
+  - Moon and Mars mission lists: NASA NSSDCA (lunar timeline, Mars chronology,
+    Table of Anthropogenic Impacts and Spacecraft on the Moon), NASA Science,
+    NASA/JPL and ESA. Facts are rewritten in our own words with links to sources.
+  - Photographs: NASA Image and Video Library (loaded from NASA servers); images
+    credited to ESA are (c) ESA and are shown for education with credit.
+  - Team photo and the RealPugs pug logo (img/): Team RealPugs.
+  - Scientific papers, NASA reports and agency documents are linked, not reproduced.
+    Every source is listed on the site's References page with its title, author,
+    year, document type and a direct link.

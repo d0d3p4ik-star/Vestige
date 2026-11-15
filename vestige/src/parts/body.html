@@ -1,0 +1,562 @@
+<body data-world="none">
+<a class="skip" href="#main" data-i18n="skip">Перейти к содержанию</a>
+
+<!-- 3D-сцена: холст закреплён на экране, текст прокручивается поверх него -->
+<canvas id="stage" aria-hidden="true"></canvas>
+<div id="fallback-sky" aria-hidden="true"><i class="m"></i><i class="r"></i></div>
+<div id="labels" aria-hidden="true"></div>
+
+<!-- ======================= ВЕРХНЯЯ ПАНЕЛЬ ======================= -->
+<header class="fixed inset-x-0 top-0 z-30">
+  <div class="flex h-14 items-center gap-1 bg-black/70 px-2 backdrop-blur-md sm:gap-2 sm:px-6">
+    <a href="#intro" class="mr-4 hidden font-display text-[1.0625rem] font-bold tracking-wide text-ink no-underline md:block" data-i18n="brand">Vestige</a>
+    <nav aria-label="Разделы" data-i18n-attr="aria-label:nav.label" class="flex items-center">
+      <a class="navlink" href="#intro" data-nav="0" data-i18n="nav.intro" aria-current="true">Старт</a>
+      <a class="navlink" href="#moon" data-nav="1" data-i18n="nav.moon">Луна</a>
+      <a class="navlink" href="#mars" data-nav="2" data-i18n="nav.mars">Марс</a>
+      <a class="navlink" href="#finale" data-nav="3" data-i18n="nav.finale">Итоги</a>
+    </nav>
+    <div class="ml-auto flex items-center gap-1 sm:gap-2">
+      <div class="seg seg-head" role="group" aria-label="Язык" data-i18n-attr="aria-label:lang.label">
+        <button type="button" data-lang="ru" aria-pressed="true" lang="ru" aria-label="Русский">RU</button>
+        <button type="button" data-lang="en" aria-pressed="false" lang="en" aria-label="English">EN</button>
+        <button type="button" data-lang="kk" aria-pressed="false" lang="kk" aria-label="Қазақша">KZ</button>
+      </div>
+      <button type="button" id="motion" class="iconbtn" aria-pressed="false" aria-label="Остановить вращение планет">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><g class="i-pause" fill="currentColor"><rect x="3.5" y="2.5" width="3.5" height="13" rx="1"/><rect x="11" y="2.5" width="3.5" height="13" rx="1"/></g><path class="i-play" d="M5 2.6v12.8a.6.6 0 0 0 .9.5l10-6.4a.6.6 0 0 0 0-1L5.9 2.1a.6.6 0 0 0-.9.5z" fill="currentColor" style="display:none"/></svg>
+      </button>
+      <button type="button" id="menu-btn" class="menubtn" aria-expanded="false" aria-controls="menu-panel">
+        <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M2.5 4.5h13M2.5 9h13M2.5 13.5h13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span data-i18n="menu.btn">Меню</span>
+      </button>
+    </div>
+  </div>
+  <div id="menu-panel" class="plate" hidden>
+    <nav id="menu-links" aria-label="Меню" data-i18n-attr="aria-label:menu.btn"></nav>
+    <div class="seg seg-menu mt-3" role="group" aria-label="Язык" data-i18n-attr="aria-label:lang.label">
+      <button type="button" data-lang="ru" aria-pressed="false" lang="ru">Русский</button>
+      <button type="button" data-lang="en" aria-pressed="false" lang="en">English</button>
+      <button type="button" data-lang="kk" aria-pressed="false" lang="kk">Қазақша</button>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="pointer-events-none relative z-10">
+
+  <!-- ======================= СЕКЦИЯ 1. ИНТРО ======================= -->
+  <section id="intro" data-scene="0" class="relative min-h-[100svh] px-5 pt-20 sm:px-10 lg:px-16" aria-labelledby="intro-h">
+    <div class="hero-copy pointer-events-auto">
+      <h1 id="intro-h" class="hero-title font-display" data-i18n="intro.title">Vestige</h1>
+      <p class="hero-lede" data-i18n="intro.lede">Интерактивный архив машин, которые люди отправили на Луну и Марс. Выберите мир, чтобы открыть его каталог миссий, — или листайте вниз: две машины расскажут о себе сами.</p>
+      <p class="hero-motto" data-i18n="intro.motto">Человечество оставило их, но забывать их нельзя.</p>
+    </div>
+    <div class="cue pointer-events-none absolute bottom-7 left-1/2 hidden -translate-x-1/2 items-center gap-3 text-[0.8125rem] text-dim sm:flex" aria-hidden="true"><span data-i18n="intro.cue">Выберите мир или листайте к рассказу</span><i></i></div>
+  </section>
+
+  <!-- ======================= СЕКЦИЯ 2. ЛУНА ======================= -->
+  <section id="moon" data-scene="1" aria-labelledby="moon-h" class="px-4 pb-[32vh] pt-[44vh] sm:px-10 lg:px-16">
+    <div class="flex w-full max-w-[33rem] flex-col gap-[62vh] lg:gap-[46vh]">
+
+      <!-- Карточка: история Лунохода-1 -->
+      <div>
+        <h2 id="moon-h" class="pointer-events-auto mb-4 inline-block border-b-2 border-moon pb-1 font-display text-[1.0625rem] font-semibold tracking-wide" data-i18n="moon.h">Глава первая. Луна</h2>
+        <article class="plate pointer-events-auto p-5 sm:p-7" data-site="lunokhod1" data-speak>
+          <header class="flex flex-wrap items-start justify-between gap-3 pr-3">
+            <div class="min-w-0 flex-1 basis-44">
+              <h3 class="font-display text-[2.125rem] font-bold leading-none sm:text-[2.5rem]" data-i18n="m1.title">Луноход-1</h3>
+              <p class="mt-2 text-[0.9688rem] leading-snug text-dim" data-i18n="m1.sub">Первый робот на колёсах, который ездил по другому небесному телу</p>
+            </div>
+            <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+          </header>
+
+          <blockquote class="voice mt-6">
+            <p data-i18n="m1.voice">Меня зовут Луноход-1. Я молчу с 1971 года: мои батареи давно сели. Но посветите в меня лазером с Земли — и я верну луч обратно. Так я работаю до сих пор.</p>
+            <cite data-i18n="m1.cite">Так мог бы сказать Луноход-1</cite>
+          </blockquote>
+
+          <figure class="mt-6">
+            <div class="photo" data-photo="lunokhod1">
+              <svg class="bp" viewBox="0 0 480 256" role="img" aria-labelledby="bp-l-title" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <title id="bp-l-title" data-i18n="bp.l.title">Схема Лунохода-1, вид сбоку: корпус-кастрюля на восьми колёсах, откинутая крышка с солнечной батареей, антенна, телекамеры, отражатель и девятое мерное колесо.</title>
+                <line x1="20" y1="214" x2="460" y2="214" class="soft"/>
+                <!-- крышка с солнечной батареей -->
+                <path d="M122 114 44 58l-6 8 78 56z" class="fillsoft"/>
+                <path d="M110 108l-5 7M98 99l-5 7M86 91l-5 7M74 82l-5 7M62 74l-5 7M50 65l-5 7" class="soft"/>
+                <!-- корпус -->
+                <path d="M138 170c-20-10-26-32-24-52h246c2 20-4 42-24 52z" class="fillsoft"/>
+                <line x1="108" y1="118" x2="366" y2="118" stroke-width="2.4"/>
+                <rect x="97" y="126" width="18" height="30" rx="3" class="soft"/>
+                <line x1="128" y1="176" x2="346" y2="176" stroke-width="3"/>
+                <!-- антенны -->
+                <path d="M296 118h12l32-62-22-6z" class="fillsoft"/>
+                <path d="M300 104l12 3M306 90l15 4M312 76l18 5M317 63l20 5" class="soft"/>
+                <line x1="236" y1="118" x2="226" y2="40"/><circle cx="226" cy="38" r="2.5" fill="currentColor"/>
+                <!-- отражатель и телекамеры -->
+                <path d="M358 104l26-10 5 12-26 10z" class="fillsoft"/>
+                <circle cx="368" cy="106" r="2" fill="currentColor" stroke="none"/><circle cx="376" cy="103" r="2" fill="currentColor" stroke="none"/><circle cx="383" cy="100" r="2" fill="currentColor" stroke="none"/>
+                <circle cx="351" cy="136" r="6.5"/><circle cx="351" cy="136" r="2.2" fill="currentColor" stroke="none"/><circle cx="342" cy="152" r="5"/>
+                <!-- восемь колёс (с этой стороны видно четыре) -->
+                <g id="bp-wheel"><circle cx="150" cy="188" r="25"/><circle cx="150" cy="188" r="17" class="soft"/><circle cx="150" cy="188" r="4" fill="currentColor" stroke="none"/><path d="M150 163v50M125 188h50M132.300 170.300l35.400 35.400M132.300 205.700l35.400-35.400" class="soft"/></g>
+                <use href="#bp-wheel" x="58"/><use href="#bp-wheel" x="116"/><use href="#bp-wheel" x="174"/>
+                <!-- девятое колесо -->
+                <line x1="130" y1="180" x2="92" y2="200"/><circle cx="88" cy="204" r="9"/><circle cx="88" cy="204" r="2" fill="currentColor" stroke="none"/>
+                <!-- подписи -->
+                <path class="lead" d="M72 70 46 34M330 58l22-22M388 98l22-16M358 138l48 12M82 213l-10 20"/>
+                <g stroke="none">
+                  <text x="14" y="26" data-i18n="bp.l.lid">крышка с солнечной батареей</text>
+                  <text x="356" y="30" data-i18n="bp.l.antenna">антенна</text>
+                  <text x="402" y="76" data-i18n="bp.l.reflector">отражатель</text>
+                  <text x="402" y="166" data-i18n="bp.l.cameras">телекамеры</text>
+                  <text x="14" y="247" data-i18n="bp.l.ninth">девятое колесо: считает путь</text>
+                </g>
+              </svg>
+              <!-- ФОТО ЛУНОХОДА-1. Путь к файлу задаётся внизу, в блоке «ПУТИ К ВАШИМ ФАЙЛАМ»: ASSETS.photos.lunokhod1.src
+                   Пока файла нет, вместо фото показывается схема выше. -->
+              <img class="w-full rounded-2xl object-cover" alt="Луноход-1" data-i18n-attr="alt:m1.photoAlt" decoding="async">
+            </div>
+            <figcaption class="mt-2 text-[0.8125rem] text-dim" data-caption="lunokhod1" data-i18n="m1.caption">Схема Лунохода-1. Длина с откинутой крышкой — 4,42 м, масса — 756 кг.</figcaption>
+          </figure>
+
+          <div class="mt-6 space-y-4">
+            <p><span data-i18n="m1.p1">17 ноября 1970 года советская станция «Луна-17» села в Море Дождей. Она опустила трапы, и на лунную пыль съехала восьмиколёсная машина, похожая на большую кастрюлю с крышкой. Внутри никого не было: водители сидели на Земле, в Крыму, за 384 тысячи километров.</span><sup class="cites" data-refs="nssdc-luna17,nssdc-lunokhod1"></sup></p>
+            <p><span data-i18n="m1.p2">Сначала луноходы придумали как помощников для космонавтов: осмотреть место посадки и поработать радиомаяком. Советские космонавты на Луну так и не полетели — и разведчик стал исследователем.</span><sup class="cites" data-refs="siddiqi2018"></sup></p>
+            <p><span data-i18n="m1.p3">Его рассчитывали на три лунных дня — около трёх месяцев. Он проработал одиннадцать: проехал 10,5 километра, передал больше 20 тысяч снимков и 206 панорам, 25 раз проверил состав грунта и около 500 раз — его прочность.</span><sup class="cites" data-refs="nssdc-luna17,nssdc-lunokhod1"></sup></p>
+          </div>
+
+          <dl class="facts mt-6 border-t border-line pt-6">
+            <div><dt data-i18n="f.launch">Запуск</dt><dd data-i18n="m1.f.launch">10 ноября 1970, Байконур</dd></div>
+            <div><dt data-i18n="f.landing">Посадка</dt><dd><span data-i18n="m1.f.landing">17 ноября 1970, Море Дождей</span><sup class="cites" data-refs="nssdc-luna17"></sup></dd></div>
+            <div><dt data-i18n="f.mass">Масса</dt><dd><span data-i18n="m1.f.mass">756 кг</span><sup class="cites" data-refs="nssdc-lunokhod1"></sup></dd></div>
+            <div><dt data-i18n="f.dist">Проехал</dt><dd><span data-i18n="m1.f.dist">10 540 м</span><sup class="cites" data-refs="nssdc-lunokhod1"></sup></dd></div>
+            <div class="wide"><dt data-i18n="f.life">Работал</dt><dd><span data-i18n="m1.f.life">11 лунных дней вместо 3 — с ноября 1970 по сентябрь 1971 года</span><sup class="cites" data-refs="nssdc-luna17"></sup></dd></div>
+            <div class="wide"><dt data-i18n="f.now">Сейчас</dt><dd><span data-i18n="m1.f.now">Молчит с 14 сентября 1971 года. Отражатель работает.</span><sup class="cites" data-refs="rg2025,murphy2011"></sup></dd></div>
+          </dl>
+          <p class="mt-4"><a class="btn btn-sm" href="#/missions/luna-17-lunokhod-1" data-i18n="link.mission">Страница миссии</a></p>
+        </article>
+      </div>
+
+      <!-- Карточка: как им управляли -->
+      <article class="plate pointer-events-auto p-5 sm:p-7" data-site="lunokhod1" data-speak>
+        <header class="flex flex-wrap items-start justify-between gap-3 pr-3">
+          <h3 class="min-w-0 flex-1 basis-44 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="m2.title">Как водить машину на Луне</h3>
+          <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+        </header>
+        <div class="mt-5 space-y-4">
+          <p><span data-i18n="m2.p1">Луноходом управлял экипаж из пяти человек: командир, водитель, штурман, бортинженер и оператор антенны. Они сидели перед экранами в центре космической связи под Симферополем.</span><sup class="cites" data-refs="rg2025,basilevsky2021"></sup></p>
+          <p><span data-i18n="m2.p2">Водить было трудно. Камеры присылали не видео, а отдельные кадры — один раз в несколько секунд. К тому же радиосигнал летит до Луны и обратно около 2,6 секунды. Водитель видел, где луноход был, а не где он сейчас, и каждый раз думал наперёд.</span><sup class="cites" data-refs="basilevsky2021"></sup></p>
+          <p><span data-i18n="m2.p3">Лунный день длится две земные недели, ночь — столько же. Днём луноход открывал крышку: на её внутренней стороне — солнечная батарея. Ночью крышка закрывалась, а приборы грел кусочек радиоактивного полония. Снаружи было около −150 °C.</span><sup class="cites" data-refs="nssdc-luna17"></sup></p>
+        </div>
+      </article>
+
+      <!-- Карточка: инженерия → наука -->
+      <article class="plate pointer-events-auto p-5 sm:p-7" data-site="lunokhod1" data-zoom="1.18" data-speak>
+        <header class="flex flex-wrap items-start justify-between gap-3 pr-3">
+          <h3 class="min-w-0 flex-1 basis-44 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="m3.title">Что умел луноход — и что мы узнали</h3>
+          <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+        </header>
+        <p class="mt-3 text-[0.9688rem] text-dim" data-i18n="m3.intro">Слева — деталь машины. Справа — что она помогла узнать.</p>
+        <div class="mt-5 space-y-5">
+          <div class="pair">
+            <div><h4 data-i18n="m3.a.part">Девятое колесо и щуп</h4><p><span data-i18n="m3.a.partText">Маленькое колесо без мотора катилось сзади и считало путь: ведущие колёса буксуют в пыли, а оно — нет. Щуп вдавливался в грунт и проверял его прочность.</span><sup class="cites" data-refs="nssdc-lunokhod1"></sup></p></div>
+            <div class="find"><h4 data-i18n="m3.a.find">По лунной пыли можно ездить</h4><p><span data-i18n="m3.a.findText">Сравнив обороты колёс и сотни уколов щупа, инженеры узнали, насколько прочна лунная поверхность.</span><sup class="cites" data-refs="nssdc-luna17"></sup></p></div>
+          </div>
+          <div class="pair">
+            <div><h4 data-i18n="m3.b.part">Рентгеновский прибор РИФМА</h4><p data-i18n="m3.b.partText">Он облучал грунт и по ответному свечению определял, какие в нём химические элементы.</p></div>
+            <div class="find"><h4 data-i18n="m3.b.find">Лунное «море» — застывшая лава</h4><p><span data-i18n="m3.b.findText">25 замеров показали базальт, вулканическую породу. Тёмные пятна на Луне когда-то были лавой.</span><sup class="cites" data-refs="basilevsky2021"></sup></p></div>
+          </div>
+          <div class="pair">
+            <div><h4 data-i18n="m3.c.part">Крышка-батарея и изотопная «грелка»</h4><p data-i18n="m3.c.partText">Днём — заряжать батареи. Ночью — закрыться и греться теплом распада полония.</p></div>
+            <div class="find"><h4 data-i18n="m3.c.find">Лунную ночь можно пережить</h4><p><span data-i18n="m3.c.findText">Одиннадцать ночей по две недели при −150 °C. Похожие «грелки» потом стояли на марсоходах Spirit и Opportunity.</span><sup class="cites" data-refs="nssdc-luna17,mer-presskit2004"></sup></p></div>
+          </div>
+        </div>
+        <p class="mt-6 border-t border-line pt-4 text-[0.875rem] leading-[1.5] text-dim"><span data-i18n="m3.note">По бортовым приборам луноход проехал 10 540 метров. В 2013 году путь перемерили по следам колёс на снимках со спутника — вышло около 9,9 км. Мерить расстояния на другом мире непросто.</span><sup class="cites" data-refs="nssdc-lunokhod1,basilevsky2021,karachevtseva2013"></sup></p>
+      </article>
+
+      <!-- Карточка: потерян и найден -->
+      <article class="plate pointer-events-auto p-5 sm:p-7" data-site="lunokhod1" data-zoom="1.18" data-speak>
+        <header class="flex flex-wrap items-start justify-between gap-3 pr-3">
+          <h3 class="min-w-0 flex-1 basis-44 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="m4.title">Потерян на сорок лет</h3>
+          <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+        </header>
+        <div class="mt-5 space-y-4">
+          <p><span data-i18n="m4.p1">Спереди у лунохода стоит французский уголковый отражатель — блок стеклянных призм. Он работает как катафот на велосипеде: возвращает свет точно туда, откуда тот пришёл. Электричество ему не нужно.</span><sup class="cites" data-refs="murphy2011"></sup></p>
+          <p><span data-i18n="m4.p2">В первые месяцы до него несколько раз дотянулись лазером с Земли. Потом связь с луноходом оборвалась, а точного места его стоянки никто не знал. Почти сорок лет лазерные лучи уходили в пустоту.</span><sup class="cites" data-refs="murphy2011"></sup></p>
+          <p><span data-i18n="m4.p3">В марте 2010 года спутник NASA под названием LRO снял этот район так подробно, что на фотографиях нашли и посадочную платформу, и луноход, и его колею. 22 апреля физик Том Мёрфи навёл лазер по новым координатам и с первой попытки поймал около 2000 частиц света. Раньше искали в нескольких километрах в стороне.</span><sup class="cites" data-refs="lroc-11,murphy2011,physorg2010"></sup></p>
+          <p><span data-i18n="m4.p4">Отражатель оказался в отличном состоянии. Теперь «Луноход-1» снова в строю: по нему и другим отражателям учёные измеряют расстояние до Луны с точностью до миллиметров, проверяют теорию Эйнштейна и изучают жидкое ядро Луны. Так мы знаем, что Луна каждый год удаляется от Земли на 3,8 сантиметра.</span><sup class="cites" data-refs="dickey1994,jpl-llr,battat2023"></sup></p>
+        </div>
+      </article>
+
+      <!-- Карточка: другие точки на Луне -->
+      <article class="plate pointer-events-auto scroll-mt-[46vh] p-5 sm:p-7 lg:scroll-mt-24">
+        <h3 class="pr-3 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="m5.title">Кто ещё остался на Луне</h3>
+        <p class="mt-4" data-i18n="m5.p">Шесть мест, с которых стоит начать. Нажмите на название — или на светящуюся точку на Луне.</p>
+        <div class="mt-5 flex flex-wrap gap-2" data-sites="moon"></div>
+        <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[0.8125rem] text-dim">
+          <li class="flex items-center gap-2"><i class="glyph" data-status="silent"></i><span data-i18n="legend.silent">молчит</span></li>
+          <li class="flex items-center gap-2"><i class="glyph" data-status="passive"></i><span data-i18n="legend.passive">ещё служит науке</span></li>
+        </ul>
+        <p class="mt-4 border-t border-line pt-4 text-[0.875rem] leading-[1.5] text-dim" data-i18n="m5.note">Модели техники на планетах увеличены в десятки и сотни тысяч раз — иначе их не разглядеть. Планету можно крутить мышью или пальцем.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= СЕКЦИЯ 3. МАРС ======================= -->
+  <section id="mars" data-scene="2" aria-labelledby="mars-h" class="px-4 pb-[32vh] pt-[44vh] sm:px-10 lg:px-16">
+    <div class="ml-auto flex w-full max-w-[33rem] flex-col gap-[62vh] lg:gap-[46vh]">
+
+      <!-- Карточка: история Opportunity -->
+      <div>
+        <h2 id="mars-h" class="pointer-events-auto mb-4 inline-block border-b-2 border-mars pb-1 font-display text-[1.0625rem] font-semibold tracking-wide" data-i18n="mars.h">Глава вторая. Марс</h2>
+        <article class="plate plate-flip pointer-events-auto p-5 sm:p-7" data-site="opportunity" data-speak>
+          <header class="flex flex-wrap items-start justify-between gap-3 pl-2">
+            <div class="min-w-0 flex-1 basis-44">
+              <h3 class="font-display text-[2.125rem] font-bold leading-none sm:text-[2.5rem]" data-i18n="r1.title">Opportunity</h3>
+              <p class="mt-2 text-[0.9688rem] leading-snug text-dim" data-i18n="r1.sub">Марсоход, который приехал на три месяца и остался на четырнадцать лет</p>
+            </div>
+            <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+          </header>
+
+          <blockquote class="voice mt-6">
+            <p data-i18n="r1.voice">Меня зовут Opportunity, для друзей — Оппи. Мне обещали 90 марсианских суток работы. Я продержался 5111 и проехал больше марафона — пока небо над всей планетой не закрыла пыль.</p>
+            <cite data-i18n="r1.cite">Так мог бы сказать Opportunity</cite>
+          </blockquote>
+
+          <figure class="mt-6">
+            <div class="photo" data-photo="opportunity">
+              <svg class="bp" viewBox="0 0 480 256" role="img" aria-labelledby="bp-o-title" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <title id="bp-o-title" data-i18n="bp.o.title">Схема марсохода Opportunity, вид сбоку: шесть колёс на подвижной подвеске, плоская палуба с солнечными панелями, мачта с камерами, антенна и рука с инструментами.</title>
+                <line x1="20" y1="214" x2="460" y2="214" class="soft"/>
+                <!-- подвеска «рокер-боги» -->
+                <path d="M322 192l-26-34-60-10-60 22M128 192l48-22 46 22" stroke-width="2.6"/>
+                <circle cx="236" cy="148" r="3.4" fill="currentColor" stroke="none"/><circle cx="176" cy="170" r="3.4" fill="currentColor" stroke="none"/>
+                <!-- корпус и палуба с солнечными панелями -->
+                <rect x="178" y="120" width="118" height="30" rx="3" class="fillsoft"/>
+                <path d="M84 104l30 6h224v7H112l-28-6z" class="fillsoft"/>
+                <path d="M126 110v7M142 110v7M158 110v7M174 110v7M190 110v7M226 110v7M242 110v7M258 110v7M274 110v7M290 110v7M322 110v7" class="soft"/>
+                <!-- мачта с камерами -->
+                <line x1="306" y1="110" x2="306" y2="46" stroke-width="2.6"/>
+                <rect x="286" y="32" width="40" height="14" rx="2.5" class="fillsoft"/>
+                <circle cx="294" cy="39" r="3.4" fill="currentColor" stroke="none"/><circle cx="318" cy="39" r="3.4" fill="currentColor" stroke="none"/><circle cx="303" cy="39" r="1.6" fill="currentColor" stroke="none"/><circle cx="309" cy="39" r="1.6" fill="currentColor" stroke="none"/>
+                <!-- антенны -->
+                <line x1="210" y1="110" x2="210" y2="86"/><ellipse cx="210" cy="79" rx="17" ry="6" transform="rotate(-18 210 79)" class="fillsoft"/>
+                <line x1="182" y1="110" x2="182" y2="72"/>
+                <!-- рука с инструментами -->
+                <path d="M296 140l40 10 16 36" stroke-width="2.2"/><circle cx="354" cy="192" r="7" class="fillsoft"/><path d="M349 199l-3 6M354 200v6M359 199l3 6" class="soft"/>
+                <!-- колёса -->
+                <g id="bp-owheel"><circle cx="128" cy="192" r="21"/><circle cx="128" cy="192" r="12" class="soft"/><circle cx="128" cy="192" r="3" fill="currentColor" stroke="none"/><path d="M128 171v9M128 204v9M107 192h9M140 192h9M113.150 177.150l6.400 6.400M136.450 200.450l6.400 6.400M113.150 206.850l6.400-6.400M136.450 183.550l6.400-6.400" class="soft"/></g>
+                <use href="#bp-owheel" x="94"/><use href="#bp-owheel" x="194"/>
+                <!-- подписи -->
+                <path class="lead" d="M328 36l30-12M130 106 96 66M212 71l-10-34M360 200l14 30M176 172l-34 60"/>
+                <g stroke="none">
+                  <text x="362" y="28" data-i18n="bp.o.mast">мачта с камерами</text>
+                  <text x="14" y="60" data-i18n="bp.o.panels">солнечные панели</text>
+                  <text x="176" y="30" data-i18n="bp.o.antenna">антенна</text>
+                  <text x="466" y="247" text-anchor="end" data-i18n="bp.o.arm">рука с инструментами</text>
+                  <text x="14" y="247" data-i18n="bp.o.susp">подвижная подвеска</text>
+                </g>
+              </svg>
+              <!-- ФОТО OPPORTUNITY. Путь к файлу задаётся внизу, в блоке «ПУТИ К ВАШИМ ФАЙЛАМ»: ASSETS.photos.opportunity.src
+                   Пока файла нет, вместо фото показывается схема выше. -->
+              <img class="w-full rounded-2xl object-cover" alt="Opportunity" data-i18n-attr="alt:r1.photoAlt" decoding="async">
+            </div>
+            <figcaption class="mt-2 text-[0.8125rem] text-dim" data-caption="opportunity" data-i18n="r1.caption">Схема Opportunity. Размером с гольф-кар: 1,6 метра в длину, 185 кг.</figcaption>
+          </figure>
+
+          <div class="mt-6 space-y-4">
+            <p><span data-i18n="r1.p1">25 января 2004 года на равнину Меридиана упал и запрыгал клубок воздушных подушек. Внутри был марсоход. Клубок докатился до маленького кратера Игл и замер прямо в нём — учёные назвали это попаданием в лунку с первого удара.</span><sup class="cites" data-refs="nssdc-oppy,squyres2004"></sup></p>
+            <p><span data-i18n="r1.p2">Его отправили искать следы воды. Со спутника в этом месте заметили гематит — минерал, который обычно образуется в воде. Оставалось приехать и проверить на месте.</span><sup class="cites" data-refs="crisp2003,squyres2004"></sup></p>
+            <p><span data-i18n="r1.p3">По плану — 90 суток и один километр пути. На деле — больше четырнадцати лет и 45 километров.</span><sup class="cites" data-refs="jpl-oppy-2019,nasa-oppy"></sup></p>
+          </div>
+
+          <dl class="facts mt-6 border-t border-line pt-6">
+            <div><dt data-i18n="f.launch">Запуск</dt><dd data-i18n="r1.f.launch">8 июля 2003, мыс Канаверал</dd></div>
+            <div><dt data-i18n="f.landing">Посадка</dt><dd><span data-i18n="r1.f.landing">25 января 2004, плато Меридиана</span><sup class="cites" data-refs="nssdc-oppy"></sup></dd></div>
+            <div><dt data-i18n="f.mass">Масса</dt><dd><span data-i18n="r1.f.mass">185 кг</span><sup class="cites" data-refs="mer-presskit2004"></sup></dd></div>
+            <div><dt data-i18n="f.dist">Проехал</dt><dd><span data-i18n="r1.f.dist">45,16 км</span><sup class="cites" data-refs="nasa-oppy"></sup></dd></div>
+            <div class="wide"><dt data-i18n="f.life">Работал</dt><dd><span data-i18n="r1.f.life">5111 солов вместо 90 — с января 2004 по июнь 2018 года</span><sup class="cites" data-refs="jpl-oppy-2019"></sup></dd></div>
+            <div class="wide"><dt data-i18n="f.now">Сейчас</dt><dd><span data-i18n="r1.f.now">Молчит с 10 июня 2018 года. Миссия завершена 13 февраля 2019 года.</span><sup class="cites" data-refs="jpl-oppy-2019"></sup></dd></div>
+          </dl>
+          <p class="mt-4"><a class="btn btn-sm" href="#/missions/opportunity" data-i18n="link.mission">Страница миссии</a></p>
+          <p class="mt-4 text-[0.8125rem] leading-[1.5] text-dim" data-i18n="r1.foot">Сол — марсианские сутки: 24 часа 39 минут. Даты — по всемирному времени (UTC); в США в эти моменты был ещё предыдущий вечер.</p>
+        </article>
+      </div>
+
+      <!-- Карточка: как им управляли + опыт с задержкой сигнала -->
+      <article class="plate plate-flip pointer-events-auto p-5 sm:p-7" data-site="opportunity" data-speak>
+        <header class="flex flex-wrap items-start justify-between gap-3 pl-2">
+          <h3 class="min-w-0 flex-1 basis-44 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="r2.title">Как управлять роботом за сотни миллионов километров</h3>
+          <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+        </header>
+        <div class="mt-5 space-y-4">
+          <p data-i18n="r2.p1">До Луны радиосигнал летит чуть больше секунды. До Марса — от 3 до 22 минут: всё зависит от того, где планеты на своих орбитах. Рулить «вживую» невозможно: пока команда «стоп» долетит, марсоход уже окажется в яме.</p>
+          <p><span data-i18n="r2.p2">Поэтому Opportunity работал по плану на день. Утром приходил список заданий. Дорогу люди прокладывали заранее, по его же снимкам. На незнакомых участках марсоход сам высматривал камни и объезжал их. Вечером он отправлял отчёт и засыпал до утра, чтобы сберечь энергию.</span><sup class="cites" data-refs="crisp2003,verma2023"></sup></p>
+        </div>
+
+        <div class="no-say mt-6 border-t border-line pt-6" id="signal">
+          <h4 class="font-display text-[1.125rem] font-semibold" data-i18n="sig.title">Проверьте сами</h4>
+          <div class="mt-4 space-y-5">
+            <div>
+              <div class="flex items-baseline justify-between gap-3 text-[0.9375rem]"><span data-i18n="sig.moon">Земля → Луна, 384 400 км</span><b class="font-semibold" data-i18n="sig.moonTime">1,3 с</b></div>
+              <div class="lane mt-2" data-lane="moon"><i class="end a"></i><i class="pulse"></i><i class="end b"></i></div>
+            </div>
+            <div>
+              <div class="flex items-baseline justify-between gap-3 text-[0.9375rem]"><span data-i18n="sig.mars">Земля → Марс</span><b class="font-semibold" id="sig-mars-time"></b></div>
+              <div class="lane mt-2" data-lane="mars"><i class="end a"></i><i class="pulse"></i><i class="end b"></i></div>
+              <label class="mt-3 block text-[0.875rem] text-dim" for="sig-dist"><span data-i18n="sig.dist">Расстояние до Марса</span>: <b id="sig-dist-val" class="font-medium text-ink"></b></label>
+              <input id="sig-dist" type="range" min="55" max="400" step="5" value="225">
+            </div>
+          </div>
+          <button type="button" class="btn btn-solid mt-4" id="sig-send" data-i18n="sig.send">Отправить команду «Вперёд»</button>
+          <p class="mt-3 min-h-[3.2em] text-[0.9375rem] leading-[1.5]" id="sig-out" role="status" aria-live="polite"></p>
+          <p class="text-[0.8125rem] text-dim" data-i18n="sig.speed">Полёт сигнала до Луны показан в настоящем времени, до Марса — ускоренно в 120 раз.</p>
+        </div>
+      </article>
+
+      <!-- Карточка: инженерия → наука -->
+      <article class="plate plate-flip pointer-events-auto p-5 sm:p-7" data-site="opportunity" data-zoom="1.18" data-speak>
+        <header class="flex flex-wrap items-start justify-between gap-3 pl-2">
+          <h3 class="min-w-0 flex-1 basis-44 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="r3.title">Что умел Opportunity — и что мы узнали</h3>
+          <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+        </header>
+        <p class="mt-3 text-[0.9688rem] text-dim" data-i18n="r3.intro">Слева — деталь машины. Справа — что она помогла узнать.</p>
+        <div class="mt-5 space-y-5">
+          <div class="pair">
+            <div><h4 data-i18n="r3.a.part">Шлифовальная машинка и микроскоп</h4><p data-i18n="r3.a.partText">На руке марсохода — фреза, которая снимает верхний слой камня, и микроскоп, чтобы рассмотреть срез.</p></div>
+            <div class="find"><h4 data-i18n="r3.a.find">Здесь была вода</h4><p><span data-i18n="r3.a.findText">В породе нашлись серые шарики размером с бусину. Их прозвали «черникой». Это гематит: такие шарики вырастают в камне, пропитанном водой.</span><sup class="cites" data-refs="squyres2004"></sup></p></div>
+          </div>
+          <div class="pair">
+            <div><h4 data-i18n="r3.b.part">Спектрометр Мёссбауэра</h4><p data-i18n="r3.b.partText">Прибор, который помещается на ладони, распознаёт минералы с железом.</p></div>
+            <div class="find"><h4 data-i18n="r3.b.find">Вода была кислой</h4><p><span data-i18n="r3.b.findText">Он нашёл ярозит — минерал, который образуется только в кислой воде. Древний Марс был мокрым, но неуютным.</span><sup class="cites" data-refs="klingelhofer2004"></sup></p></div>
+          </div>
+          <div class="pair">
+            <div><h4 data-i18n="r3.c.part">Шесть колёс и терпение</h4><p><span data-i18n="r3.c.partText">За три года марсоход проехал 21 километр до огромного кратера Индевор — он 22 километра в ширину.</span><sup class="cites" data-refs="usgs-endeavour"></sup></p></div>
+            <div class="find"><h4 data-i18n="r3.c.find">А здесь вода годилась для жизни</h4><p><span data-i18n="r3.c.findText">На краю кратера нашлись жилы гипса и глины. Они образуются в спокойной, не кислой воде — самой дружелюбной для микробов из всего, что видел Opportunity.</span><sup class="cites" data-refs="squyres2012,jpl-homestake"></sup></p></div>
+          </div>
+          <div class="pair">
+            <div><h4 data-i18n="r3.d.part">Солнечные панели</h4><p data-i18n="r3.d.partText">Инженеры ждали, что за несколько месяцев пыль засыплет панели и энергия кончится.</p></div>
+            <div class="find"><h4 data-i18n="r3.d.find">Марс сам чистил марсоход</h4><p><span data-i18n="r3.d.findText">Порывы ветра раз за разом сдували пыль. Этого никто не планировал — и это подарило миссии годы.</span><sup class="cites" data-refs="six-things-oppy"></sup></p></div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Карточка: финал миссии -->
+      <article class="plate plate-flip pointer-events-auto p-5 sm:p-7" data-site="opportunity" data-zoom="1.18" data-speak>
+        <header class="flex flex-wrap items-start justify-between gap-3 pl-2">
+          <h3 class="min-w-0 flex-1 basis-44 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="r4.title">Последняя буря</h3>
+          <button type="button" class="btn btn-sm speak shrink-0" hidden><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6v4h2.5L8 13V3L4.5 6H2z" fill="currentColor"/><path d="M10.5 5.2a4 4 0 0 1 0 5.6M12.4 3.3a6.6 6.6 0 0 1 0 9.4" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><span data-str="listen">Слушать</span></button>
+        </header>
+        <div class="mt-5 space-y-4">
+          <p><span data-i18n="r4.p1">В июне 2018 года пыльная буря накрыла весь Марс. Над Opportunity стало так темно, что панели перестали давать ток. 10 июня он вышел на связь в последний раз.</span><sup class="cites" data-refs="jpl-oppy-2019"></sup></p>
+          <p><span data-i18n="r4.p2">Больше тысячи раз инженеры посылали ему команду проснуться. 13 февраля 2019 года NASA объявило: миссия завершена. Марсоход стоит на склоне долины Персеверанс — в переводе «Настойчивость».</span><sup class="cites" data-refs="jpl-oppy-recovery,jpl-oppy-2019"></sup></p>
+          <p><span data-i18n="r4.p3">Opportunity был рекордсменом по дальности двенадцать лет — с 2014 года, когда обогнал «Луноход-2». А 11 октября 2026 года его 45,16 километра превзошёл марсоход с тем же именем, что у долины: Perseverance.</span><sup class="cites" data-refs="jpl-record2014,jpl-perse-record"></sup></p>
+        </div>
+      </article>
+
+      <!-- Карточка: другие точки на Марсе -->
+      <article class="plate plate-flip pointer-events-auto scroll-mt-[46vh] p-5 sm:p-7 lg:scroll-mt-24">
+        <h3 class="pl-2 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="r5.title">Кто ещё остался на Марсе</h3>
+        <p class="mt-4" data-i18n="r5.p">Десять точек: восемь аппаратов молчат, два работают прямо сейчас. Нажмите на название — или на точку на Марсе.</p>
+        <div class="mt-5 flex flex-wrap gap-2" data-sites="mars"></div>
+        <ul class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[0.8125rem] text-dim">
+          <li class="flex items-center gap-2"><i class="glyph" data-status="silent"></i><span data-i18n="legend.silent">молчит</span></li>
+          <li class="flex items-center gap-2"><i class="glyph" data-status="active"></i><span data-i18n="legend.active">работает</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ======================= СЕКЦИЯ 4. ИТОГИ ======================= -->
+  <section id="finale" data-scene="3" aria-labelledby="finale-h" class="px-4 pb-20 pt-[46vh] sm:px-10">
+    <div class="pointer-events-auto mx-auto flex w-full max-w-[54rem] flex-col gap-8 sm:gap-10">
+
+      <header class="max-w-[40rem]">
+        <h2 id="finale-h" class="font-display text-[clamp(2.4rem,6.5vw,4.5rem)] font-extrabold leading-[0.95]" data-i18n="fin.title">Они всё ещё там</h2>
+        <p class="mt-5 text-[1.1875rem] leading-[1.5]" data-i18n="fin.lede">Посмотрите сегодня на Луну. Где-то в Море Дождей стоит Луноход-1 и ждёт следующей лазерной вспышки.</p>
+      </header>
+
+      <!-- Эстафета рекордов -->
+      <article class="plate p-5 sm:p-8">
+        <h3 class="pr-3 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="f1.title">Эстафета длиной в полвека</h3>
+        <p class="mt-4 max-w-[40rem]" data-i18n="f1.p">Рекорд дальности на другом мире не раз переходил от машины к машине — и от одной страны к другой.</p>
+        <figure class="mt-6">
+          <figcaption class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+            <span class="font-medium" data-i18n="f1.chartTitle">Сколько проехали по Луне и Марсу, км</span>
+            <span class="text-[0.8125rem] text-dim"><i class="swatch" style="background:var(--chart-moon)"></i><span data-i18n="f1.legMoon">Луна</span><i class="swatch ml-4" style="background:var(--chart-mars)"></i><span data-i18n="f1.legMars">Марс</span></span>
+          </figcaption>
+          <div id="relay" class="mt-3"></div>
+        </figure>
+        <p class="mt-5 max-w-[40rem]"><span data-i18n="f1.p2">Луноходом люди рулили почти вживую. Opportunity сам выбирал дорогу только на 5% пути. Perseverance — больше чем на 90%.</span><sup class="cites" data-refs="jpl-perse-record"></sup></p>
+        <p class="mt-3 text-[0.8125rem] text-dim"><span data-i18n="f1.stamp">Данные NASA на 11 октября 2026 года. Путь «Лунохода-2» уточнён по снимкам спутника LRO.</span><sup class="cites" data-refs="jpl-perse-record,karachevtseva2017"></sup></p>
+      </article>
+
+      <!-- Викторина вынесена на отдельную страницу -->
+      <article class="plate p-5 sm:p-8 quiz-teaser" id="quiz-teaser"></article>
+
+      <!-- За пределами экрана: наш импакт и команда -->
+      <article class="plate p-5 sm:p-8" id="impact"></article>
+
+      <!-- Другие миры -->
+      <article class="plate p-5 sm:p-8">
+        <h3 class="pr-3 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="f3.title">А ещё дальше</h3>
+        <p class="mt-4" data-i18n="f3.p">Земная техника осталась не только на Луне и Марсе.</p>
+        <div class="mt-6 grid gap-6 md:grid-cols-3">
+          <div class="border-t border-line pt-4">
+            <h4 class="font-display text-[1.125rem] font-semibold" data-i18n="f3.a.h">Венера</h4>
+            <p class="mt-1 text-[0.8125rem] text-dim" data-i18n="f3.a.who">«Венера-13», СССР, 1982</p>
+            <p class="mt-2 text-[0.9688rem] leading-[1.5]"><span data-i18n="f3.a.t">Проработала на поверхности 127 минут и передала первые цветные панорамы. Там около 460 °C, а давление — как в океане на глубине почти километр.</span><sup class="cites" data-refs="siddiqi2018,surkov1984"></sup></p>
+            <p class="mt-2"><a class="text-[0.875rem] underline decoration-line hover:decoration-ink" href="#/missions/venera-13" data-i18n="link.mission">Страница миссии</a></p>
+          </div>
+          <div class="border-t border-line pt-4">
+            <h4 class="font-display text-[1.125rem] font-semibold" data-i18n="f3.b.h">Титан</h4>
+            <p class="mt-1 text-[0.8125rem] text-dim" data-i18n="f3.b.who">«Гюйгенс», Европа, 2005</p>
+            <p class="mt-2 text-[0.9688rem] leading-[1.5]"><span data-i18n="f3.b.t">Единственная посадка во внешней Солнечной системе. Зонд два с половиной часа спускался на парашюте и ещё 72 минуты передавал данные с поверхности спутника Сатурна.</span><sup class="cites" data-refs="lebreton2005,esa-huygens10"></sup></p>
+            <p class="mt-2"><a class="text-[0.875rem] underline decoration-line hover:decoration-ink" href="#/missions/huygens" data-i18n="link.mission">Страница миссии</a></p>
+          </div>
+          <div class="border-t border-line pt-4">
+            <h4 class="font-display text-[1.125rem] font-semibold" data-i18n="f3.c.h">Комета Чурюмова — Герасименко</h4>
+            <p class="mt-1 text-[0.8125rem] text-dim" data-i18n="f3.c.who">«Филы», Европа, 2014</p>
+            <p class="mt-2 text-[0.9688rem] leading-[1.5]"><span data-i18n="f3.c.t">Первая посадка на комету. Аппарат дважды отскочил, оказался в тени и проработал около 64 часов, пока не сели батареи.</span><sup class="cites" data-refs="biele2015,bibring2015"></sup></p>
+            <p class="mt-2"><a class="text-[0.875rem] underline decoration-line hover:decoration-ink" href="#/missions/philae" data-i18n="link.mission">Страница миссии</a></p>
+          </div>
+        </div>
+      </article>
+
+      <!-- О проекте и источники -->
+      <article class="plate p-5 sm:p-8">
+        <h3 class="pr-3 font-display text-[1.625rem] font-bold leading-[1.1]" data-i18n="f4.title">Об этом проекте</h3>
+        <dl class="mt-5 grid gap-x-10 gap-y-5 text-[0.9688rem] leading-[1.55] md:grid-cols-2">
+          <div><dt class="font-medium accent" data-i18n="f4.who.h">Для кого</dt><dd class="mt-1" data-i18n="f4.who.t">Для школьников от 10 лет и для всех, кому интересен космос.</dd></div>
+          <div><dt class="font-medium accent" data-i18n="f4.how.h">Как пользоваться</dt><dd class="mt-1" data-i18n="f4.how.t">Листайте страницу — планеты поворачиваются сами. Точки на планетах можно нажимать, планету можно крутить. В меню — архив миссий, хронология, библиотека исследований и все источники. Всё, что показано в 3D, есть и в тексте.</dd></div>
+          <div><dt class="font-medium accent" data-i18n="f4.honest.h">Что здесь условно</dt><dd class="mt-1" data-i18n="f4.honest.t">Модели техники сильно увеличены. Настоящая Луна всегда повёрнута к Земле одной стороной — здесь она вращается, чтобы показать все точки. Слова от имени аппаратов придуманы, факты — настоящие.</dd></div>
+          <div><dt class="font-medium accent" data-i18n="f4.acc.h">Точность</dt><dd class="mt-1" data-i18n="f4.acc.t">Даты и цифры сверены с NASA и другими источниками в ноябре 2026 года. Некоторые числа со временем уточняют — например, путь луноходов.</dd></div>
+        </dl>
+
+        <h4 class="mt-8 font-display text-[1.125rem] font-semibold" data-i18n="f4.src.h">Источники</h4>
+        <ul class="mt-3 grid gap-x-10 gap-y-2 text-[0.875rem] leading-[1.45] md:grid-cols-2">
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://web.archive.org/web/20250814180112/https://nssdc.gsfc.nasa.gov/nmc/spacecraft/display.action?id=1970-095A" data-i18n="src.1">NASA NSSDCA: «Луна-17» и «Луноход-1»</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.lroc.im-ldi.com/images/402" data-i18n="src.2">LROC: «Луноход-1» на снимках с орбиты</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://arxiv.org/pdf/1009.5720" data-i18n="src.3">Мёрфи и др., 2010: лазерная локация потерянного отражателя</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.jpl.nasa.gov/news/the-apollo-experiment-that-keeps-on-giving/" data-i18n="src.4">NASA JPL: эксперимент «Аполлонов», который всё ещё идёт</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://science.nasa.gov/earth/moon/footpads-and-footprints-humans-and-machine-meet-on-the-moon/" data-i18n="src.5">NASA Science: «Сервейер-3» и «Аполлон-12»</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.nature.com/articles/498284a" data-i18n="src.6">Nature, 2013: сколько на самом деле проехали луноходы</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.jpl.nasa.gov/news/nasas-opportunity-rover-mission-on-mars-comes-to-end/" data-i18n="src.7">NASA JPL, 2019: миссия Opportunity завершена</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://science.nasa.gov/missions/mer/six-things-to-know-about-nasas-opportunity-rover" data-i18n="src.8">NASA Science: шесть фактов об Opportunity</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.jpl.nasa.gov/news/nasa-long-lived-mars-opportunity-rover-sets-off-world-driving-record/" data-i18n="src.9">NASA JPL, 2014: Opportunity обгоняет «Луноход-2»</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.jpl.nasa.gov/news/nasas-perseverance-sets-off-world-record-for-total-distance-driven/" data-i18n="src.10">NASA JPL, 2026: рекорд Perseverance</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://science.nasa.gov/mission/mer-spirit" data-i18n="src.11">NASA Science: марсоход Spirit</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://science.nasa.gov/mission/viking-1" data-i18n="src.12">NASA Science: «Викинг-1»</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://www.jpl.nasa.gov/edu/resources/teachable-moment/how-insight-revealed-the-heart-of-mars/" data-i18n="src.13">NASA JPL: что InSight узнал о недрах Марса</a></li>
+          <li><a class="underline decoration-line hover:decoration-ink" target="_blank" rel="noopener" href="https://phys.org/news/2015-01-huygens-mission-ten-years-titan.html" data-i18n="src.14">ESA на phys.org: десять лет посадке «Гюйгенса» на Титан</a></li>
+        </ul>
+        <p class="mt-4"><a class="btn btn-sm" href="#/references" data-i18n="f4.allrefs">Все источники с поиском</a></p>
+
+        <!-- Реестр моделей и список фотографий — в разделе «Авторы и лицензии» -->
+        <p class="mt-8 border-t border-line pt-4 text-[0.8125rem] leading-[1.5] text-dim" data-i18n="f4.credits">3D-модели аппаратов — NASA 3D Resources. Глобус Луны — NASA Scientific Visualization Studio («Moon 3D Models for Web, AR, and Animation», 2026). Глобус Марса — NASA/JPL-Caltech («Planet Mars, 3D Model», NASA Science, 2019). Фотографии — библиотека изображений NASA и фотоархив команды (у каждого снимка указан автор). Списки миссий — NASA NSSDCA, NASA Science, NASA/JPL и ESA. Шрифты: Tektur и Geologica. Сделано на Three.js и Tailwind CSS.</p>
+      </article>
+    </div>
+  </section>
+  <div id="main-foot" class="px-4 pb-10 sm:px-10"></div>
+</main>
+
+<!-- ======================= ДОСЬЕ ВЫБРАННОЙ ТОЧКИ ======================= -->
+<aside id="dossier" class="plate p-5 sm:p-6" style="--cut:0px" role="dialog" aria-modal="false" aria-labelledby="dossier-name" aria-hidden="true">
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <p class="text-[0.8125rem] text-dim" id="dossier-who"></p>
+      <h2 class="mt-0.5 font-display text-[1.625rem] font-bold leading-tight" id="dossier-name" tabindex="-1"></h2>
+    </div>
+    <button type="button" class="iconbtn -mr-2 -mt-2 shrink-0" id="dossier-close" aria-label="Закрыть">
+      <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M3.5 3.5l11 11M14.5 3.5l-11 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <p class="mt-2 flex items-center gap-2 text-[0.875rem]"><i class="glyph" id="dossier-glyph"></i><span id="dossier-status"></span></p>
+  <p class="mt-3 text-[0.9688rem] leading-[1.55]" id="dossier-text"></p>
+  <p class="mt-3 text-[0.9688rem] leading-[1.55]"><b class="accent font-medium" data-str="science">Что это дало науке.</b> <span id="dossier-science"></span></p>
+  <p class="mt-3 text-[0.8125rem] leading-[1.45] text-dim"><span id="dossier-place"></span><sup class="cites" id="dossier-refs"></sup></p>
+  <p class="mt-3"><a class="btn btn-sm" id="dossier-page" href="#/missions" hidden><span data-i18n="link.mission">Страница миссии</span></a></p>
+  <div class="mt-4 flex items-center justify-between gap-2">
+    <button type="button" class="btn" id="dossier-prev"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 4 7l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-str="prev">Назад</span></button>
+    <span class="text-[0.8125rem] text-dim" id="dossier-count"></span>
+    <button type="button" class="btn" id="dossier-next"><span data-str="next">Дальше</span><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="m5 2 5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
+</aside>
+
+<!-- ======================= ВЫБОР ПЛАНЕТЫ: кнопки под планетами (положение задаёт 3D-сцена) ======================= -->
+<nav class="picks" aria-label="Выберите мир" data-i18n-attr="aria-label:pick.label">
+  <a id="pick-moon" class="pick" href="#/explore/moon" tabindex="-1"><b>Исследовать Луну</b><span></span></a>
+  <a id="pick-mars" class="pick" href="#/explore/mars" tabindex="-1"><b>Исследовать Марс</b><span></span></a>
+</nav>
+
+<!-- ======================= КАТАЛОГ ПЛАНЕТЫ (режим «Исследовать») ======================= -->
+<section id="explore" aria-labelledby="explore-h" hidden>
+  <p class="ex-bar"><button type="button" class="btn btn-sm" id="explore-back"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 4 7l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Выбрать другой мир</span></button></p>
+  <h2 id="explore-h" class="ex-title font-display">Луна</h2>
+  <p class="ex-lede" id="explore-lede"></p>
+  <ul class="ex-legend" id="explore-legend"></ul>
+  <div id="explore-cat"></div>
+</section>
+
+<!-- Всплывающий список источников у значка рядом с утверждением -->
+<div id="cite-pop" class="plate" role="dialog" aria-modal="false" aria-label="Sources" hidden></div>
+
+<!-- ======================= РАЗДЕЛЫ САЙТА (архив, источники, страницы миссий…) ======================= -->
+<div id="page" role="region" hidden>
+  <div class="page-inner">
+    <p class="page-bar"><button type="button" class="btn btn-sm" id="page-close"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M9 2 4 7l5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="page.back">Назад к рассказу</span></button></p>
+    <div id="page-body"></div>
+  </div>
+</div>
+
+<!-- ======================= ЗАСТАВКА: ЛАБОРАТОРИЯ REALPUGS ======================= -->
+<div id="lab" role="dialog" aria-modal="true" aria-labelledby="lab-title" hidden>
+  <div class="lab-room">
+    <div class="lab-main">
+      <p class="lab-brand"><img src="img/realpugs-logo.jpg" alt="" width="44" height="44"><span>REALPUGS</span></p>
+      <h2 id="lab-title" class="font-display">VESTIGE</h2>
+      <p id="lab-sub"></p>
+      <div class="lab-grid">
+        <button type="button" class="mon" data-mon="about"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><circle cx="14" cy="11" r="4.5"/><circle cx="27" cy="11" r="4.5"/><path d="M6 25c1.5-5 5-7 8-7s6.5 2 8 7M19 25c1.5-5 5-7 8-7s6.5 2 8 7"/></svg></span><b>About us</b></button>
+        <button type="button" class="mon" data-mon="impact"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><path d="M6 8h11c2 0 3 1 3 3v12c0-2-1-3-3-3H6zM34 8H23c-2 0-3 1-3 3v12c0-2 1-3 3-3h11z"/></svg></span><b>Our impact</b></button>
+        <button type="button" class="mon" data-mon="challenge"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><circle cx="20" cy="14" r="8"/><ellipse cx="20" cy="14" rx="16" ry="5" transform="rotate(-18 20 14)"/></svg></span><b>NASA Space Apps Challenge</b></button>
+        <div class="lab-window">
+          <canvas id="lab-canvas" aria-hidden="true"></canvas>
+          <span id="lab-live"></span>
+          <div class="lab-planets">
+            <button type="button" class="lab-planet" data-lab-planet="moon"><i class="lw-moon" aria-hidden="true"></i><b></b><span></span></button>
+            <button type="button" class="lab-planet" data-lab-planet="mars"><i class="lw-mars" aria-hidden="true"></i><b></b><span></span></button>
+          </div>
+        </div>
+        <button type="button" class="mon" data-mon="language"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><text x="20" y="18" text-anchor="middle">EN · RU · KZ</text></svg></span><b>Language</b></button>
+        <button type="button" class="mon" data-mon="quiz"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><circle cx="20" cy="14" r="9"/><path d="M17 11.5a3 3 0 1 1 4 2.8c-.8.4-1 1-1 1.7M20 19v.5"/></svg></span><b>Quiz</b></button>
+        <button type="button" class="mon" data-mon="references"><span class="mon-scr" aria-hidden="true"><svg viewBox="0 0 40 28"><path d="M9 5h14l6 6v13H9zM23 5v6h6M13 15h12M13 19h12"/></svg></span><b>References</b></button>
+      </div>
+      <div class="lab-langs" hidden>
+        <button type="button" class="btn" data-lab-lang="en" lang="en">English</button>
+        <button type="button" class="btn" data-lab-lang="ru" lang="ru">Русский</button>
+        <button type="button" class="btn" data-lab-lang="kk" lang="kk">Қазақша</button>
+      </div>
+      <p id="lab-hint" class="lab-hint"></p>
+      <button type="button" class="btn btn-solid lab-enter" id="lab-enter">Start the story tour</button>
+      <p id="lab-motto" class="lab-motto"></p>
+    </div>
+  </div>
+  <div class="lab-door l" aria-hidden="true"></div>
+  <div class="lab-door r" aria-hidden="true"></div>
+  <div class="lab-emblem" aria-hidden="true"><img src="img/realpugs-logo.jpg" alt="" width="176" height="176"><span>RealPugs</span><small>Research laboratory</small></div>
+  <div class="lab-scanline" aria-hidden="true"></div>
+  <p class="lab-scan" id="lab-scan" aria-live="polite"></p>
+  <p class="lab-top"><button type="button" class="btn btn-sm" id="lab-skip">Skip intro</button></p>
+</div>
+
+<!-- Просмотр фотографии крупно -->
+<dialog id="lightbox" aria-label="Photo">
+  <div class="lb-frame"><img src="" alt=""><button type="button" class="lb-nav lb-prev" aria-label="Previous">‹</button><button type="button" class="lb-nav lb-next" aria-label="Next">›</button></div>
+  <div class="lb-info"><p class="lb-cap"></p><p class="lb-credit"></p></div>
+  <button type="button" class="btn btn-sm lb-close">Close</button>
+  <div class="lb-toasts" aria-live="polite"></div>
+</dialog>
+<!-- Сообщения о полученных значках -->
+<div id="toasts" aria-live="polite"></div>
+
+<!-- Подсказка и индикатор загрузки моделей -->
+<p id="hint" class="pointer-events-none fixed left-0 top-0 z-[6] max-w-[calc(100vw-1rem)] rounded-[3px] text-center sm:whitespace-nowrap border border-line bg-black/70 px-3 py-1.5 text-[0.8125rem] text-dim opacity-0 transition-opacity duration-500" aria-hidden="true"></p>
+<p id="loader" class="pointer-events-none fixed bottom-3 left-3 z-20 max-w-[calc(100vw-1.5rem)] rounded-[3px] border border-line bg-black/75 px-3 py-1.5 text-[0.8125rem] text-dim opacity-0 transition-opacity duration-500" role="status" aria-live="polite"></p>
